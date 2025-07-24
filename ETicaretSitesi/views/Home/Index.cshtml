@@ -1,0 +1,97 @@
+﻿@model List<ETicaretSitesi.models.Urun>
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var kategori = ViewBag.Kategori as int?;
+    var kategoriler = ViewBag.Kategoriler as List<ETicaretSitesi.models.Kategori>;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="container mt-4">
+    <!-- navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4">
+        <a class="navbar-brand fw-bold" href="#">E-Ticaret Sitem</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Ana Sayfa</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Ürünler</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Kategoriler</a>
+                </li>
+            </ul>
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Ürün ara..." aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Ara</button>
+            </form>
+            <a href="#" class="btn btn-primary ms-3">
+                <i class="bi bi-cart"></i> Sepetim
+            </a>
+        </div>
+    </nav>
+    <div class="p-5 mb-4 bg-primary text-white rounded-3 shadow-sm">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold">Hoşgeldiniz!</h1>
+            <p class="col-md-8 fs-4">En yeni ürünler, avantajlı fiyatlar ve hızlı teslimat ile alışverişin keyfini çıkarın.</p>
+            <a href="#" class="btn btn-light btn-lg">Alışverişe Başla</a>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Kategori -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Kategoriler</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <a href="/Home/Index" class="list-group-item list-group-item-action @(kategori == null ? "active" : "")">Tümü</a>
+                    @if (kategoriler != null)
+                    {
+                        foreach (var kat in kategoriler)
+                        {
+                            <a href="/Home/Index?kategori=@kat.Id" class="list-group-item list-group-item-action @(kategori == kat.Id ? "active" : "")">@kat.Isim</a>
+                        }
+                    }
+                </ul>
+            </div>
+        </div>
+        <!-- Ürünler-->
+        <div class="col-md-9">
+            <h4 class="mb-3">Öne Çıkan Ürünler</h4>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @if (Model != null && Model.Count > 0)
+                {
+                    foreach (var urun in Model)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/default.png" : urun.ResimUrl)" class="card-img-top" alt="@urun.Ad" />
+                                <div class="card-body">
+                                    <h5 class="card-title">@urun.Ad</h5>
+                                    <p class="card-text">@urun.Aciklama</p>
+                                    <span class="badge bg-secondary">@urun.Kategori?.Isim</span>
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <span class="badge bg-success mb-2">₺@urun.Fiyat</span>
+                                    <a href="#" class="btn btn-primary w-100">Sepete Ekle</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info">Ürün bulunamadı.</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script> 
