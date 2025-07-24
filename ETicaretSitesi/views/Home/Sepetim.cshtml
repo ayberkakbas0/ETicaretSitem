@@ -1,0 +1,72 @@
+﻿@model IEnumerable<ETicaretSitesi.models.Urun>
+
+@{
+    ViewBag.Title = "Sepetim";
+    decimal toplamTutar = 0;
+}
+
+<h2>Sepetim</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Sepetinizde ürün yok.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th>Fiyat</th>
+                <th>Adet</th>
+                <th>Toplam</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var urun = item.Urun;
+                var satirToplam = urun.Fiyat * item.Adet;
+                toplamTutar += satirToplam;
+                <tr>
+                    <td>@urun.Ad</td>
+                    <td>@urun.Fiyat.ToString("C")</td>
+                    <td>
+                        <form asp-action="AdetGuncelle" asp-controller="Sepet" method="post" style="display:inline;">
+                            <input type="hidden" name="sepetId" value="@item.Id" />
+                            <button type="submit" name="adet" value="@(item.Adet - 1)" class="btn btn-sm btn-secondary" @(item.Adet == 1 ? "disabled" : "")>-</button>
+                        </form>
+                        <span class="mx-2">@item.Adet</span>
+                        <form asp-action="AdetGuncelle" asp-controller="Sepet" method="post" style="display:inline;">
+                            <input type="hidden" name="sepetId" value="@item.Id" />
+                            <button type="submit" name="adet" value="@(item.Adet + 1)" class="btn btn-sm btn-secondary">+</button>
+                        </form>
+                    </td>
+                    <td>@satirToplam.ToString("C")</td>
+                    <td>
+                        <form asp-action="Sil" asp-controller="Sepet" method="post" style="display:inline;">
+                            <input type="hidden" name="sepetId" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right"><strong>Toplam:</strong></td>
+                <td colspan="2"><strong>@toplamTutar.ToString("C")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex justify-content-between">
+        <form asp-action="SepetiTemizle" asp-controller="Sepet" method="post">
+            <button type="submit" class="btn btn-warning">Sepeti Temizle</button>
+        </form>
+        <form asp-action="Odeme" asp-controller="Sepet" method="get">
+            <button type="submit" class="btn btn-success">Ödeme Yap</button>
+        </form>
+    </div>
+}

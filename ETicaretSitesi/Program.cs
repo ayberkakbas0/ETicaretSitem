@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ETicaretSitesiContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ETicaretSitemDB")));
 
+// Session servisini ekle
+builder.Services.AddSession();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -21,6 +24,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Session middleware'i ekle (Authorization'dan önce olmalý!)
+app.UseSession();
 
 app.UseAuthorization();
 

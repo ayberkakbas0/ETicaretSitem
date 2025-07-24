@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ETicaretSitesi.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using ETicaretSitesi.models;
+using System.Linq;
 
 namespace ETicaretSitesi.Controllers
 {
@@ -27,6 +30,37 @@ namespace ETicaretSitesi.Controllers
             ViewBag.Kategori = kategori;
             ViewBag.Kategoriler = _context.Kategori.ToList();
             return View(Urunler.ToList());
+        }
+        public IActionResult Sepetim()
+        {
+            List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+
+            // Sepetinizde adet bilgisi yoksa, varsayılan olarak 1 adet kabul edelim
+            var sepetList = _context.Urunler
+                .Where(u => sepet.Contains(u.Id))
+                .Select(u => new Sepet
+                {
+                    Id = u.Id,
+                    Urun = u,
+                    Adet = 1 // veya sessiondan adet bilgisi de tutuyorsanız onu kullanın
+                }).ToList();
+
+            decimal toplamTutar = sepetList.Sum(s => s.Urun.Fiyat * s.Adet);
+            ViewBag.ToplamTutar = toplamTutar;
+
+            return View(sepetList);
+        }
+        [HttpPost]
+        public IActionResult SepeteEkle(int Id)
+        {
+            // Sepeti sessiondan al
+            List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+            // Ürünü ekle
+            sepet.Add(Id);
+            // Sepeti tekrar sessiona kaydet
+            HttpContext.Session.SetObject("Sepet", sepet);
+            // Ana sayfaya dön
+            return RedirectToAction("Index");
         }
     }
 }

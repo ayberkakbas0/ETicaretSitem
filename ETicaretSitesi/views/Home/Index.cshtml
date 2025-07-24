@@ -78,7 +78,10 @@
                                 </div>
                                 <div class="card-footer bg-white">
                                     <span class="badge bg-success mb-2">₺@urun.Fiyat</span>
-                                    <a href="#" class="btn btn-primary w-100">Sepete Ekle</a>
+                                    <form method="post" action="/Home/SepeteEkle">
+                                        <input type="hidden" name="urunId" value="@urun.Id" />
+                                        <button type="submit" class="btn btn-primary w-100">Sepete Ekle</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
