@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-
+using System.Runtime.CompilerServices;
+// 
 namespace ETicaretSitesi.Extensions
 {
     public static class SessionExtensions

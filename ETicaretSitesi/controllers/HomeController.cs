@@ -51,15 +51,11 @@ namespace ETicaretSitesi.Controllers
             return View(sepetList);
         }
         [HttpPost]
-        public IActionResult SepeteEkle(int Id)
+        public IActionResult SepeteEkle(int urunId)
         {
-            // Sepeti sessiondan al
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
-            // Ürünü ekle
-            sepet.Add(Id);
-            // Sepeti tekrar sessiona kaydet
+            sepet.Add(urunId);
             HttpContext.Session.SetObject("Sepet", sepet);
-            // Ana sayfaya dön
             return RedirectToAction("Index");
         }
     }
