@@ -35,14 +35,13 @@ namespace ETicaretSitesi.Controllers
         {
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
 
-            // Sepetinizde adet bilgisi yoksa, varsayılan olarak 1 adet kabul edelim
-            var sepetList = _context.Urunler
-                .Where(u => sepet.Contains(u.Id))
-                .Select(u => new Sepet
+            var sepetList = sepet
+                .GroupBy(id => id)
+                .Select(g => new Sepet
                 {
-                    Id = u.Id,
-                    Urun = u,
-                    Adet = 1 // veya sessiondan adet bilgisi de tutuyorsanız onu kullanın
+                    Id = g.Key,
+                    Urun = _context.Urunler.FirstOrDefault(u => u.Id == g.Key),
+                    Adet = g.Count()
                 }).ToList();
 
             decimal toplamTutar = sepetList.Sum(s => s.Urun.Fiyat * s.Adet);

@@ -15,6 +15,7 @@ namespace ETicaretSitesi.Controllers
 
         // Adet güncelle
         [HttpPost]
+        [HttpPost]
         public IActionResult AdetGuncelle(int sepetId, int adet)
         {
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
