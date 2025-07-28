@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-secondary text-white text-center py-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Giriş Yap
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-@(TempData["MesajTipi"] ?? "info") alert-dismissible fade show" role="alert">
+                            <i class="bi bi-@(TempData["MesajTipi"] == "success" ? "check-circle" :
+                                          TempData["MesajTipi"] == "danger" ? "exclamation-triangle" :
+                                          TempData["MesajTipi"] == "warning" ? "exclamation-circle" : "info-circle")"></i>
+                            @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post" action="/Auth/Login">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email Adresi
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   placeholder="ornek@email.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sifre" class="form-label">
+                                <i class="bi bi-lock"></i> Şifre
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="sifre" name="sifre"
+                                       placeholder="Şifrenizi girin" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-0">Hesabınız yok mu?</p>
+                        <a href="/Auth/Register" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('sifre');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.className = 'bi bi-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.className = 'bi bi-eye';
+        }
+    }
+
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            const email = document.getElementById('email').value.trim();
+            const sifre = document.getElementById('sifre').value.trim();
+
+            if (!email || !sifre) {
+                e.preventDefault();
+                alert('Lütfen tüm alanları doldurun.');
+                return false;
+            }
+        });
+    });
+</script> 

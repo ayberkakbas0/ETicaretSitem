@@ -5,9 +5,50 @@
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 
 <div class="container mt-4">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4">
+        <a class="navbar-brand fw-bold" href="/Home/Index">E-Ticaret Sitem</a>
+        <div class="navbar-nav ms-auto">
+            @if (Context.Session.GetString("KullaniciId") != null)
+            {
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> @Context.Session.GetString("KullaniciAd")
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/Auth/Profile"><i class="bi bi-person"></i> Profilim</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/Auth/Logout"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a href="/Auth/Login" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                </a>
+                <a href="/Auth/Register" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                </a>
+            }
+        </div>
+    </nav>
+
     <h2 class="mb-4 text-primary"><i class="bi bi-cart"></i> Sepetim</h2>
+
+    @if (TempData["Mesaj"] != null)
+    {
+        <div class="alert alert-@(TempData["MesajTipi"] ?? "info") alert-dismissible fade show" role="alert">
+            <i class="bi bi-@(TempData["MesajTipi"] == "success" ? "check-circle" :
+                              TempData["MesajTipi"] == "danger" ? "exclamation-triangle" :
+                              TempData["MesajTipi"] == "warning" ? "exclamation-circle" : "info-circle")"></i>
+            @TempData["Mesaj"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
     @if (!Model.Any())
     {
@@ -33,14 +74,24 @@
                                 <span class="badge bg-info text-dark">Stok: @urun.Stok</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
-                                <form asp-action="AdetGuncelle" asp-controller="Sepet" method="post" style="display:inline;">
+                                <!-- Adet azalt -->
+                                <form method="post" action="/Sepet/AdetGuncelle" style="display: inline;">
                                     <input type="hidden" name="sepetId" value="@item.Urun.Id" />
-                                    <button type="submit" name="adet" value="@(item.Adet - 1)" class="btn btn-sm btn-outline-secondary" @(item.Adet == 1 ? "disabled" : "")>-</button>
+                                    <input type="hidden" name="adet" value="@(item.Adet - 1)" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary @(item.Adet == 1 ? "disabled" : "")"
+                                    @(item.Adet == 1 ? "disabled" : "")>
+                                        -
+                                    </button>
                                 </form>
                                 <span class="mx-2 fs-5">@item.Adet</span>
-                                <form asp-action="AdetGuncelle" asp-controller="Sepet" method="post" style="display:inline;">
+                                <!-- Adet arttır -->
+                                <form method="post" action="/Sepet/AdetGuncelle" style="display: inline;">
                                     <input type="hidden" name="sepetId" value="@item.Urun.Id" />
-                                    <button type="submit" name="adet" value="@(item.Adet + 1)" class="btn btn-sm btn-outline-secondary" @(item.Adet >= urun.Stok ? "disabled" : "")>+</button>
+                                    <input type="hidden" name="adet" value="@(item.Adet + 1)" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary @(item.Adet >= urun.Stok ? "disabled" : "")"
+                                    @(item.Adet >= urun.Stok ? "disabled" : "")>
+                                        +
+                                    </button>
                                 </form>
                             </div>
                             <div>
@@ -49,9 +100,12 @@
                             </div>
                         </div>
                         <div class="card-footer bg-white d-flex justify-content-between">
-                            <form asp-action="Sil" asp-controller="Sepet" method="post" style="display:inline;">
+                            <!-- Ürün sil -->
+                            <form method="post" action="/Sepet/Sil" style="display: inline;">
                                 <input type="hidden" name="sepetId" value="@item.Urun.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('@urun.Ad ürününü sepetten silmek istediğinizden emin misiniz?')">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -66,14 +120,26 @@
             </div>
         </div>
         <div class="d-flex justify-content-between mt-3">
-            <form asp-action="SepetiTemizle" asp-controller="Sepet" method="post">
-                <button type="submit" class="btn btn-warning">Sepeti Temizle</button>
+            <!-- Sepeti temizle -->
+            <form method="post" action="/Sepet/SepetiTemizle" style="display: inline;">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Sepetinizdeki tüm ürünleri silmek istediğinizden emin misiniz?')">
+                    <i class="bi bi-trash3"></i> Sepeti Temizle
+                </button>
             </form>
             <form asp-action="Odeme" asp-controller="Sepet" method="get">
-                <button type="submit" class="btn btn-success">Ödeme Yap</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-credit-card"></i> Ödeme Yap
+                </button>
             </form>
         </div>
     }
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    // Sayfa yüklendiğinde çalışacak kodlar buraya eklenebilir
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Sepetim sayfası yüklendi');
+    });
+</script> 

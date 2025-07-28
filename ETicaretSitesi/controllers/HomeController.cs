@@ -1,7 +1,6 @@
 ﻿using ETicaretSitesi.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using ETicaretSitesi.models;
 using System.Linq;
 
@@ -31,11 +30,61 @@ namespace ETicaretSitesi.Controllers
             ViewBag.Kategoriler = _context.Kategori.ToList();
             return View(Urunler.ToList());
         }
-        public IActionResult Sepetim()
+
+        [HttpPost]
+        public IActionResult SepeteEkle(int urunId)
         {
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+            sepet.Add(urunId);
+            HttpContext.Session.SetObject("Sepet", sepet);
+            return RedirectToAction("Index");
+        }
 
-            var sepetList = sepet
+        public IActionResult Sepetim(string action = "", int sepetId = 0, int adet = 0)
+        {
+            // Debug için
+            System.Diagnostics.Debug.WriteLine($"Sepetim çağrıldı: action={action}, sepetId={sepetId}, adet={adet}");
+
+            // Sepet işlemleri
+            if (!string.IsNullOrEmpty(action))
+            {
+                List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+                System.Diagnostics.Debug.WriteLine($"İşlem öncesi sepet eleman sayısı: {sepet.Count}");
+
+                switch (action.ToLower())
+                {
+                    case "sil":
+                        if (sepetId > 0)
+                        {
+                            int silinenAdet = sepet.RemoveAll(x => x == sepetId);
+                            HttpContext.Session.SetObject("Sepet", sepet);
+                            System.Diagnostics.Debug.WriteLine($"Sil işlemi: sepetId={sepetId}, silinen adet={silinenAdet}, yeni eleman sayısı: {sepet.Count}");
+                        }
+                        break;
+
+                    case "adetguncelle":
+                        if (sepetId > 0 && adet > 0)
+                        {
+                            sepet.RemoveAll(x => x == sepetId);
+                            for (int i = 0; i < adet; i++)
+                                sepet.Add(sepetId);
+                            HttpContext.Session.SetObject("Sepet", sepet);
+                            System.Diagnostics.Debug.WriteLine($"Adet güncelleme: sepetId={sepetId}, adet={adet}, yeni eleman sayısı: {sepet.Count}");
+                        }
+                        break;
+
+                    case "temizle":
+                        HttpContext.Session.Remove("Sepet");
+                        System.Diagnostics.Debug.WriteLine("Sepet temizlendi");
+                        break;
+                }
+            }
+
+            // Sepet listesini getir
+            List<int> sepetList = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+            System.Diagnostics.Debug.WriteLine($"Sepet listesi eleman sayısı: {sepetList.Count}");
+
+            var sepetItems = sepetList
                 .GroupBy(id => id)
                 .Select(g => new Sepet
                 {
@@ -44,18 +93,10 @@ namespace ETicaretSitesi.Controllers
                     Adet = g.Count()
                 }).ToList();
 
-            decimal toplamTutar = sepetList.Sum(s => s.Urun.Fiyat * s.Adet);
+            decimal toplamTutar = sepetItems.Sum(s => s.Urun.Fiyat * s.Adet);
             ViewBag.ToplamTutar = toplamTutar;
 
-            return View(sepetList);
-        }
-        [HttpPost]
-        public IActionResult SepeteEkle(int urunId)
-        {
-            List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
-            sepet.Add(urunId);
-            HttpContext.Session.SetObject("Sepet", sepet);
-            return RedirectToAction("Index");
+            return View(sepetItems);
         }
     }
 }
