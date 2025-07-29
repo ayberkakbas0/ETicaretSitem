@@ -94,14 +94,21 @@
                     {
                         <div class="col">
                             <div class="card h-100 shadow-sm">
-                                <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/default.png" : urun.ResimUrl)" class="card-img-top" alt="@urun.Ad" />
-                                <div class="card-body">
-                                    <h5 class="card-title">@urun.Ad</h5>
-                                    <p class="card-text">@urun.Aciklama</p>
-                                    <span class="badge bg-secondary">@urun.Kategori?.Isim</span>
-                                </div>
+                                <a href="/Home/UrunDetay/@urun.Id" class="text-decoration-none">
+                                    <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/default.png" : urun.ResimUrl)" class="card-img-top" alt="@urun.Ad" style="cursor: pointer;" />
+                                    <div class="card-body">
+                                        <h5 class="card-title text-dark">@urun.Ad</h5>
+                                        <p class="card-text text-muted">@urun.Aciklama</p>
+                                        <span class="badge bg-secondary">@urun.Kategori?.Isim</span>
+                                    </div>
+                                </a>
                                 <div class="card-footer bg-white">
-                                    <span class="badge bg-success mb-2">₺@urun.Fiyat</span>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-success">₺@urun.Fiyat</span>
+                                        <button class="btn btn-sm btn-outline-info" onclick="yorumModalAc(@urun.Id, '@urun.Ad')">
+                                            <i class="bi bi-chat-dots"></i> Yorum Yap
+                                        </button>
+                                    </div>
                                     <form method="post" action="/Home/SepeteEkle">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="urunId" value="@urun.Id" />
@@ -122,4 +129,110 @@
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
+
+<!-- Yorum Model -->
+<div class="modal fade" id="yorumModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-chat-dots"></i> Yorum Yap
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Yorum/Ekle">
+                <div class="modal-body">
+                    <input type="hidden" id="urunId" name="urunId" />
+                    <div class="mb-3">
+                        <label class="form-label">Ürün:</label>
+                        <p class="form-control-plaintext" id="urunAdi"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="puan" class="form-label">Puanınız:</label>
+                        <div class="d-flex gap-2">
+                            <input type="radio" class="btn-check" name="puan" id="puan1" value="1" required>
+                            <label class="btn btn-outline-warning" for="puan1">1 ⭐</label>
+
+                            <input type="radio" class="btn-check" name="puan" id="puan2" value="2" required>
+                            <label class="btn btn-outline-warning" for="puan2">2 ⭐⭐</label>
+
+                            <input type="radio" class="btn-check" name="puan" id="puan3" value="3" required>
+                            <label class="btn btn-outline-warning" for="puan3">3 ⭐⭐⭐</label>
+
+                            <input type="radio" class="btn-check" name="puan" id="puan4" value="4" required>
+                            <label class="btn btn-outline-warning" for="puan4">4 ⭐⭐⭐⭐</label>
+
+                            <input type="radio" class="btn-check" name="puan" id="puan5" value="5" required>
+                            <label class="btn btn-outline-warning" for="puan5">5 ⭐⭐⭐⭐⭐</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="metin" class="form-label">Yorumunuz:</label>
+                        <textarea class="form-control" id="metin" name="metin" rows="4"
+                                  placeholder="Bu ürün hakkında düşüncelerinizi paylaşın..." maxlength="500" required></textarea>
+                        <small class="text-muted">Kalan karakter: <span id="karakterSayisi">500</span></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Yorum Gönder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function yorumModalAc(urunId, urunAdi) {
+        // Kullanıcı giriş yapmış mı kontrol et
+    @if (Context.Session.GetString("KullaniciId") == null)
+    {
+        <text>
+                alert('Yorum yapmak için giriş yapmalısınız.');
+            window.location.href = '/Auth/Login';
+            return;
+        </text>
+    }
+
+            document.getElementById('urunId').value = urunId;
+        document.getElementById('urunAdi').textContent = urunAdi;
+
+        // Modal'ı aç
+        var modal = new bootstrap.Modal(document.getElementById('yorumModal'));
+        modal.show();
+    }
+
+    // Karakter sayısı kontrolü
+    document.getElementById('metin').addEventListener('input', function () {
+        var kalan = 500 - this.value.length;
+        document.getElementById('karakterSayisi').textContent = kalan;
+
+        if (kalan < 50) {
+            document.getElementById('karakterSayisi').style.color = 'red';
+        } else {
+            document.getElementById('karakterSayisi').style.color = 'gray';
+        }
+    });
+
+    
+    document.querySelector('#yorumModal form').addEventListener('submit', function (e) {
+        var metin = document.getElementById('metin').value.trim();
+        var puan = document.querySelector('input[name="puan"]:checked');
+
+        if (!metin) {
+            e.preventDefault();
+            alert('Lütfen yorum metni girin.');
+            return false;
+        }
+
+        if (!puan) {
+            e.preventDefault();
+            alert('Lütfen puan seçin.');
+            return false;
+        }
+    });
+</script> 

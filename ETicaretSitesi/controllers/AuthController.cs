@@ -36,18 +36,18 @@ namespace ETicaretSitesi.Controllers
                 {
                     TempData["Mesaj"] = "Email ve şifre alanları boş olamaz.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Login.cshtml");
                 }
 
                 // Kullanıcıyı bul
                 var kullanici = _context.Kullanici
-                    .FirstOrDefault(k => k.Email.ToLower() == email.ToLower() && k.Aktif);
+                    .FirstOrDefault(k => k.Email.ToLower() == email.ToLower());
 
                 if (kullanici == null)
                 {
                     TempData["Mesaj"] = "Email veya şifre hatalı.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Login.cshtml");
                 }
 
                 // Şifreyi doğrula
@@ -55,7 +55,7 @@ namespace ETicaretSitesi.Controllers
                 {
                     TempData["Mesaj"] = "Email veya şifre hatalı.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Login.cshtml");
                 }
 
                 // Session'a kullanıcı bilgilerini kaydet
@@ -73,7 +73,7 @@ namespace ETicaretSitesi.Controllers
             {
                 TempData["Mesaj"] = "Giriş yapılırken bir hata oluştu.";
                 TempData["MesajTipi"] = "danger";
-                return View();
+                return View("~/Views/Home/Login.cshtml");
             }
         }
 
@@ -100,21 +100,21 @@ namespace ETicaretSitesi.Controllers
                 {
                     TempData["Mesaj"] = "Tüm zorunlu alanları doldurun.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Register.cshtml");
                 }
 
                 if (sifre != sifreTekrar)
                 {
                     TempData["Mesaj"] = "Şifreler eşleşmiyor.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Register.cshtml");
                 }
 
                 if (!PasswordHasher.IsPasswordStrong(sifre))
                 {
                     TempData["Mesaj"] = "Şifre en az 6 karakter olmalı ve harf + rakam içermelidir.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Register.cshtml");
                 }
 
                 // Email kontrolü
@@ -122,7 +122,16 @@ namespace ETicaretSitesi.Controllers
                 {
                     TempData["Mesaj"] = "Bu email adresi zaten kullanılıyor.";
                     TempData["MesajTipi"] = "danger";
-                    return View();
+                    return View("~/Views/Home/Register.cshtml");
+                }
+
+                // Telefon kontrolü (eğer telefon girilmişse)
+                if (!string.IsNullOrEmpty(telefon?.Trim()) &&
+                    _context.Kullanici.Any(k => k.Telefon == telefon.Trim()))
+                {
+                    TempData["Mesaj"] = "Bu telefon numarası zaten kullanılıyor.";
+                    TempData["MesajTipi"] = "danger";
+                    return View("~/Views/Home/Register.cshtml");
                 }
 
                 // Yeni kullanıcı oluştur
@@ -149,7 +158,7 @@ namespace ETicaretSitesi.Controllers
             {
                 TempData["Mesaj"] = "Kayıt olurken bir hata oluştu.";
                 TempData["MesajTipi"] = "danger";
-                return View();
+                return View("~/Views/Home/Register.cshtml");
             }
         }
 

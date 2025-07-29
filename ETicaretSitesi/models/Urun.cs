@@ -20,5 +20,13 @@ namespace ETicaretSitesi.models
 
         [ForeignKey("KategoriId")]
         public Kategori Kategori { get; set; }
+
+        
+        public List<Yorum> Yorumlar { get; set; } = new List<Yorum>();
+
+       
+        public double OrtalamaPuan => Yorumlar?.Where(y => y.Onaylandi).Any() == true
+            ? Yorumlar.Where(y => y.Onaylandi).Average(y => y.Puan)
+            : 0;
     }
 }

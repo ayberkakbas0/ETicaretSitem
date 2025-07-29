@@ -12,7 +12,7 @@ namespace ETicaretSitesi.models
         public string Durum { get; set; }
         public string Adres { get; set; }
 
-        // Navigation property
+        
         public Kullanici Kullanici { get; set; }
     }
 }

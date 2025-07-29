@@ -13,27 +13,27 @@ namespace ETicaretSitesi.Controllers
             _context = context;
         }
 
-        // Test action - GET
+        
         [HttpGet]
         public IActionResult Test()
         {
             return Content("SepetController çalışıyor!");
         }
 
-        // Sepeti temizle - Geliştirilmiş versiyon
+        
         [HttpPost]
         public IActionResult SepetiTemizle()
         {
             try
             {
-                // Session'ı temizle
+               
                 HttpContext.Session.Remove("Sepet");
 
-                // Başarı mesajı ekle
+               
                 TempData["Mesaj"] = "Sepetiniz başarıyla temizlendi.";
                 TempData["MesajTipi"] = "success";
 
-                // Sepetim sayfasına yönlendir
+                
                 return RedirectToAction("Sepetim", "Home");
             }
             catch (Exception ex)
@@ -44,7 +44,7 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Ürün sil - Geliştirilmiş versiyon
+        
         [HttpPost]
         public IActionResult Sil(int sepetId)
         {
@@ -83,7 +83,7 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Adet güncelle - Geliştirilmiş versiyon
+        
         [HttpPost]
         public IActionResult AdetGuncelle(int sepetId, int adet)
         {
@@ -96,7 +96,7 @@ namespace ETicaretSitesi.Controllers
                     return RedirectToAction("Sepetim", "Home");
                 }
 
-                // Ürün stok kontrolü
+                
                 var urun = _context.Urunler.FirstOrDefault(u => u.Id == sepetId);
                 if (urun == null)
                 {
@@ -133,11 +133,11 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Ödeme
+        
         [HttpGet]
         public IActionResult Odeme()
         {
-            // Sepet kontrolü
+            
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
             if (!sepet.Any())
             {

@@ -40,12 +40,41 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Index");
         }
 
+        
+        public IActionResult UrunDetay(int id)
+        {
+            var urun = _context.Urunler
+                .Include(u => u.Kategori)
+                .FirstOrDefault(u => u.Id == id);
+
+            if (urun == null)
+            {
+                TempData["Mesaj"] = "Ürün bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("Index");
+            }
+
+            
+            var yorumlar = _context.Yorumlar
+                .Include(y => y.Kullanici)
+                .Where(y => y.UrunId == id && y.Onaylandi)
+                .OrderByDescending(y => y.Tarih)
+                .ToList();
+
+            ViewBag.Yorumlar = yorumlar;
+
+            
+            ViewBag.OrtalamaPuan = yorumlar.Any() ? yorumlar.Average(y => y.Puan) : 0;
+
+            return View(urun);
+        }
+
         public IActionResult Sepetim(string action = "", int sepetId = 0, int adet = 0)
         {
-            // Debug için
+            
             System.Diagnostics.Debug.WriteLine($"Sepetim çağrıldı: action={action}, sepetId={sepetId}, adet={adet}");
 
-            // Sepet işlemleri
+            
             if (!string.IsNullOrEmpty(action))
             {
                 List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
@@ -80,7 +109,7 @@ namespace ETicaretSitesi.Controllers
                 }
             }
 
-            // Sepet listesini getir
+            
             List<int> sepetList = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
             System.Diagnostics.Debug.WriteLine($"Sepet listesi eleman sayısı: {sepetList.Count}");
 
