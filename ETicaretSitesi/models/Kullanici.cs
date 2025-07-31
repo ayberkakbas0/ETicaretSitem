@@ -16,8 +16,9 @@ namespace ETicaretSitesi.models
 
         public DateTime KayitTarihi { get; set; }
         public bool Aktif { get; set; }
+        public bool AdminMi { get; set; } = false;
 
-        
+        // Yorumlar ilişkisi
         public List<Yorum> Yorumlar { get; set; } = new List<Yorum>();
     }
 }

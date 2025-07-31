@@ -6,28 +6,44 @@
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 <div class="container mt-4">
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4">
-        <a class="navbar-brand fw-bold" href="#">E-Ticaret Sitem</a>
+        <a class="navbar-brand fw-bold" href="/Home/Index">E-Ticaret Sitem</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#">Ana Sayfa</a>
+                    <a class="nav-link active" href="/Home/Index">Ana Sayfa</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Ürünler</a>
+                    <a class="nav-link" href="/Home/Index">Ürünler</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Kategoriler</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid"></i> Kategoriler
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/Home/Index"><i class="bi bi-collection"></i> Tüm Kategoriler</a></li>
+                        @if (kategoriler != null)
+                        {
+                            <li><hr class="dropdown-divider"></li>
+                            foreach (var kat in kategoriler)
+                            {
+                                <li><a class="dropdown-item" href="/Home/Index?kategori=@kat.Id"><i class="bi bi-tag"></i> @kat.Isim</a></li>
+                            }
+                        }
+                    </ul>
                 </li>
             </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Ürün ara..." aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Ara</button>
+            <form class="d-flex" method="get" action="/Home/Index" role="search">
+                <input class="form-control me-2" type="search" name="arama" placeholder="Ürün ara..." aria-label="Search" value="@ViewBag.Arama">
+                <button class="btn btn-outline-success" type="submit">
+                    <i class="bi bi-search"></i> Ara
+                </button>
             </form>
             <a href="/Home/Sepetim" class="btn btn-primary ms-3">
                 <i class="bi bi-cart"></i> Sepetim
@@ -40,6 +56,13 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/Auth/Profile"><i class="bi bi-person"></i> Profilim</a></li>
+                        @if (Context.Session.GetString("AdminMi") == "true")
+                        {
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/Admin/AdminPanel"><i class="bi bi-shield-check"></i> Admin Paneli</a></li>
+                            <li><a class="dropdown-item" href="/Admin/YorumYonetimi"><i class="bi bi-chat-dots"></i> Yorum Yönetimi</a></li>
+                            <li><a class="dropdown-item" href="/Admin/KullaniciYonetimi"><i class="bi bi-people"></i> Kullanıcı Yönetimi</a></li>
+                        }
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="/Auth/Logout"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
                     </ul>
@@ -86,7 +109,21 @@
         </div>
         <!-- Ürünler-->
         <div class="col-md-9">
-            <h4 class="mb-3">Öne Çıkan Ürünler</h4>
+            @if (!string.IsNullOrEmpty(ViewBag.Arama))
+            {
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-search"></i> Arama Sonuçları: "@ViewBag.Arama"
+                    </h4>
+                    <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle"></i> Aramayı Temizle
+                    </a>
+                </div>
+            }
+            else
+            {
+                <h4 class="mb-3">Öne Çıkan Ürünler</h4>
+            }
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 @if (Model != null && Model.Count > 0)
                 {
@@ -122,7 +159,23 @@
                 else
                 {
                     <div class="col-12">
-                        <div class="alert alert-info">Ürün bulunamadı.</div>
+                        @if (!string.IsNullOrEmpty(ViewBag.Arama))
+                        {
+                            <div class="text-center py-5">
+                                <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">Arama sonucu bulunamadı</h5>
+                                <p class="text-muted">"@ViewBag.Arama" için sonuç bulunamadı. Farklı anahtar kelimeler deneyin.</p>
+                                <a href="/Home/Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Tüm Ürünlere Dön
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Ürün bulunamadı.
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -130,7 +183,7 @@
     </div>
 </div>
 
-<!-- Yorum Model -->
+<!-- Yorum Modal -->
 <div class="modal fade" id="yorumModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -152,23 +205,23 @@
                         <div class="d-flex gap-2">
                             <input type="radio" class="btn-check" name="puan" id="puan1" value="1" required>
                             <label class="btn btn-outline-warning" for="puan1">1 ⭐</label>
-
+                            
                             <input type="radio" class="btn-check" name="puan" id="puan2" value="2" required>
                             <label class="btn btn-outline-warning" for="puan2">2 ⭐⭐</label>
-
+                            
                             <input type="radio" class="btn-check" name="puan" id="puan3" value="3" required>
                             <label class="btn btn-outline-warning" for="puan3">3 ⭐⭐⭐</label>
-
+                            
                             <input type="radio" class="btn-check" name="puan" id="puan4" value="4" required>
                             <label class="btn btn-outline-warning" for="puan4">4 ⭐⭐⭐⭐</label>
-
+                            
                             <input type="radio" class="btn-check" name="puan" id="puan5" value="5" required>
                             <label class="btn btn-outline-warning" for="puan5">5 ⭐⭐⭐⭐⭐</label>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="metin" class="form-label">Yorumunuz:</label>
-                        <textarea class="form-control" id="metin" name="metin" rows="4"
+                        <textarea class="form-control" id="metin" name="metin" rows="4" 
                                   placeholder="Bu ürün hakkında düşüncelerinizi paylaşın..." maxlength="500" required></textarea>
                         <small class="text-muted">Kalan karakter: <span id="karakterSayisi">500</span></small>
                     </div>
@@ -187,52 +240,52 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    function yorumModalAc(urunId, urunAdi) {
-        // Kullanıcı giriş yapmış mı kontrol et
+function yorumModalAc(urunId, urunAdi) {
+    // Kullanıcı giriş yapmış mı kontrol et
     @if (Context.Session.GetString("KullaniciId") == null)
     {
         <text>
-                alert('Yorum yapmak için giriş yapmalısınız.');
-            window.location.href = '/Auth/Login';
-            return;
+        alert('Yorum yapmak için giriş yapmalısınız.');
+        window.location.href = '/Auth/Login';
+        return;
         </text>
     }
-
-            document.getElementById('urunId').value = urunId;
-        document.getElementById('urunAdi').textContent = urunAdi;
-
-        // Modal'ı aç
-        var modal = new bootstrap.Modal(document.getElementById('yorumModal'));
-        modal.show();
-    }
-
-    // Karakter sayısı kontrolü
-    document.getElementById('metin').addEventListener('input', function () {
-        var kalan = 500 - this.value.length;
-        document.getElementById('karakterSayisi').textContent = kalan;
-
-        if (kalan < 50) {
-            document.getElementById('karakterSayisi').style.color = 'red';
-        } else {
-            document.getElementById('karakterSayisi').style.color = 'gray';
-        }
-    });
-
     
-    document.querySelector('#yorumModal form').addEventListener('submit', function (e) {
-        var metin = document.getElementById('metin').value.trim();
-        var puan = document.querySelector('input[name="puan"]:checked');
+    document.getElementById('urunId').value = urunId;
+    document.getElementById('urunAdi').textContent = urunAdi;
+    
+    // Modal'ı aç
+    var modal = new bootstrap.Modal(document.getElementById('yorumModal'));
+    modal.show();
+}
 
-        if (!metin) {
-            e.preventDefault();
-            alert('Lütfen yorum metni girin.');
-            return false;
-        }
+// Karakter sayısı kontrolü
+document.getElementById('metin').addEventListener('input', function() {
+    var kalan = 500 - this.value.length;
+    document.getElementById('karakterSayisi').textContent = kalan;
+    
+    if (kalan < 50) {
+        document.getElementById('karakterSayisi').style.color = 'red';
+    } else {
+        document.getElementById('karakterSayisi').style.color = 'gray';
+    }
+});
 
-        if (!puan) {
-            e.preventDefault();
-            alert('Lütfen puan seçin.');
-            return false;
-        }
-    });
+// Form validation
+document.querySelector('#yorumModal form').addEventListener('submit', function(e) {
+    var metin = document.getElementById('metin').value.trim();
+    var puan = document.querySelector('input[name="puan"]:checked');
+    
+    if (!metin) {
+        e.preventDefault();
+        alert('Lütfen yorum metni girin.');
+        return false;
+    }
+    
+    if (!puan) {
+        e.preventDefault();
+        alert('Lütfen puan seçin.');
+        return false;
+    }
+});
 </script> 

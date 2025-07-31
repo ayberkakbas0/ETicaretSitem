@@ -64,6 +64,16 @@ namespace ETicaretSitesi.Controllers
                 HttpContext.Session.SetString("KullaniciSoyad", kullanici.Soyad);
                 HttpContext.Session.SetString("KullaniciEmail", kullanici.Email);
 
+                // Admin kontrolü
+                if (kullanici.AdminMi)
+                {
+                    HttpContext.Session.SetString("AdminMi", "true");
+                }
+                else
+                {
+                    HttpContext.Session.SetString("AdminMi", "false");
+                }
+
                 TempData["Mesaj"] = $"Hoş geldiniz, {kullanici.Ad} {kullanici.Soyad}!";
                 TempData["MesajTipi"] = "success";
 
@@ -149,6 +159,9 @@ namespace ETicaretSitesi.Controllers
                 _context.Kullanici.Add(yeniKullanici);
                 _context.SaveChanges();
 
+                // Yeni kayıt olan kullanıcı normal kullanıcı olarak işaretlenir
+                HttpContext.Session.SetString("AdminMi", "false");
+
                 TempData["Mesaj"] = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
                 TempData["MesajTipi"] = "success";
 
@@ -191,5 +204,7 @@ namespace ETicaretSitesi.Controllers
 
             return View("~/Views/Home/Profile.cshtml", kullanici);
         }
+
+
     }
 }

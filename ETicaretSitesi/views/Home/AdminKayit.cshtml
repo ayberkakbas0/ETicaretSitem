@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Admin Kayıt";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-lock"></i> Admin Kayıt
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-@TempData["MesajTipi"] alert-dismissible fade show" role="alert">
+                            @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Dikkat!</strong> Bu sayfa sadece ilk admin hesabı oluşturmak için kullanılır.
+                        Admin kodu gereklidir.
+                    </div>
+
+                    <form method="post" action="/Admin/AdminKayit">
+                        <div class="mb-3">
+                            <label for="ad" class="form-label">
+                                <i class="bi bi-person"></i> Ad
+                            </label>
+                            <input type="text" class="form-control" id="ad" name="ad" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="soyad" class="form-label">
+                                <i class="bi bi-person"></i> Soyad
+                            </label>
+                            <input type="text" class="form-control" id="soyad" name="soyad" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sifre" class="form-label">
+                                <i class="bi bi-lock"></i> Şifre
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="sifre" name="sifre" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('sifre')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sifreTekrar" class="form-label">
+                                <i class="bi bi-lock"></i> Şifre Tekrar
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="sifreTekrar" name="sifreTekrar" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('sifreTekrar')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="adminKodu" class="form-label">
+                                <i class="bi bi-key"></i> Admin Kodu
+                            </label>
+                            <input type="password" class="form-control" id="adminKodu" name="adminKodu" required>
+                            <small class="form-text text-muted">Admin hesabı oluşturmak için özel kod gereklidir.</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-shield-check"></i> Admin Hesabı Oluştur
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <a href="/Admin/AdminLogin" class="btn btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Admin Girişi
+                        </a>
+                        <a href="/Home/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-house"></i> Ana Sayfa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const ad = document.getElementById('ad').value.trim();
+    const soyad = document.getElementById('soyad').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const sifre = document.getElementById('sifre').value;
+    const sifreTekrar = document.getElementById('sifreTekrar').value;
+    const adminKodu = document.getElementById('adminKodu').value;
+    
+    if (!ad || !soyad || !email || !sifre || !sifreTekrar || !adminKodu) {
+        e.preventDefault();
+        alert('Lütfen tüm alanları doldurun.');
+        return false;
+    }
+    
+    if (sifre !== sifreTekrar) {
+        e.preventDefault();
+        alert('Şifreler eşleşmiyor.');
+        return false;
+    }
+    
+    if (sifre.length < 6) {
+        e.preventDefault();
+        alert('Şifre en az 6 karakter olmalıdır.');
+        return false;
+    }
+});
+</script> 

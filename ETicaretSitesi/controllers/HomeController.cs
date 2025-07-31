@@ -15,18 +15,29 @@ namespace ETicaretSitesi.Controllers
             _context = context;
         }
 
-        public IActionResult Index(int? kategori)
+        public IActionResult Index(int? kategori, string arama)
         {
             var Urunler = _context.Urunler
                 .Include(u => u.Kategori)
                 .AsQueryable();
 
+            // Kategori filtresi
             if (kategori.HasValue)
             {
                 Urunler = Urunler.Where(u => u.KategoriId == kategori.Value);
             }
 
+            // Arama filtresi
+            if (!string.IsNullOrEmpty(arama))
+            {
+                Urunler = Urunler.Where(u =>
+                    u.Ad.Contains(arama) ||
+                    u.Aciklama.Contains(arama) ||
+                    u.Kategori.Isim.Contains(arama));
+            }
+
             ViewBag.Kategori = kategori;
+            ViewBag.Arama = arama;
             ViewBag.Kategoriler = _context.Kategori.ToList();
             return View(Urunler.ToList());
         }
@@ -40,7 +51,7 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Index");
         }
 
-        
+        // Ürün detay sayfası
         public IActionResult UrunDetay(int id)
         {
             var urun = _context.Urunler
@@ -54,7 +65,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Index");
             }
 
-            
+            // Yorumları ayrıca getir
             var yorumlar = _context.Yorumlar
                 .Include(y => y.Kullanici)
                 .Where(y => y.UrunId == id && y.Onaylandi)
@@ -63,7 +74,7 @@ namespace ETicaretSitesi.Controllers
 
             ViewBag.Yorumlar = yorumlar;
 
-            
+            // Ortalama puan hesapla
             ViewBag.OrtalamaPuan = yorumlar.Any() ? yorumlar.Average(y => y.Puan) : 0;
 
             return View(urun);
@@ -71,10 +82,10 @@ namespace ETicaretSitesi.Controllers
 
         public IActionResult Sepetim(string action = "", int sepetId = 0, int adet = 0)
         {
-            
+            // Debug için
             System.Diagnostics.Debug.WriteLine($"Sepetim çağrıldı: action={action}, sepetId={sepetId}, adet={adet}");
 
-            
+            // Sepet işlemleri
             if (!string.IsNullOrEmpty(action))
             {
                 List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
@@ -109,7 +120,7 @@ namespace ETicaretSitesi.Controllers
                 }
             }
 
-            
+            // Sepet listesini getir
             List<int> sepetList = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
             System.Diagnostics.Debug.WriteLine($"Sepet listesi eleman sayısı: {sepetList.Count}");
 

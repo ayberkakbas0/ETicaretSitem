@@ -1,0 +1,281 @@
+﻿@model List<ETicaretSitesi.models.Yorum>
+
+@{
+    ViewData["Title"] = "Yorum Yönetimi";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="text-secondary mb-1">
+                        <i class="bi bi-chat-dots"></i> Yorum Yönetimi
+                    </h3>
+                    <p class="text-muted mb-0">Tüm yorumları görüntüleyin ve yönetin</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/Admin/AdminPanel" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Admin Paneli
+                    </a>
+                    <a href="/Home/Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> Ana Sayfa
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ana Kart -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Yorum Listesi
+                        </h5>
+                        <span class="badge bg-light text-dark">@Model.Count() yorum</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-@TempData["MesajTipi"] alert-dismissible fade show" role="alert">
+                            <i class="bi bi-info-circle"></i> @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted mt-3">Henüz yorum bulunmuyor</h5>
+                            <p class="text-muted">Kullanıcılar yorum yaptığında burada görünecek.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-person"></i> Kullanıcı
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-box"></i> Ürün
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-chat-text"></i> Yorum
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-star"></i> Puan
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-calendar"></i> Tarih
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-check-circle"></i> Durum
+                                        </th>
+                                        <th class="text-secondary">
+                                            <i class="bi bi-gear"></i> İşlemler
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var yorum in Model)
+                                    {
+                                        <tr id="yorum-@yorum.Id" class="align-middle">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                                        <i class="bi bi-person"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-dark">@yorum.Kullanici.Ad @yorum.Kullanici.Soyad</strong><br>
+                                                        <small class="text-muted">@yorum.Kullanici.Email</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="bg-light rounded p-2">
+                                                    <strong class="text-dark">@yorum.Urun.Ad</strong><br>
+                                                    <small class="text-muted">ID: @yorum.Urun.Id</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="@yorum.Metin">
+                                                    <span class="text-dark">@yorum.Metin</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        if (i <= yorum.Puan)
+                                                        {
+                                                            <i class="bi bi-star-fill text-warning me-1"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="bi bi-star text-muted me-1"></i>
+                                                        }
+                                                    }
+                                                    <span class="badge bg-warning text-dark ms-1">@yorum.Puan</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="bg-light rounded p-2 text-center">
+                                                    <small class="text-muted">@yorum.Tarih.ToString("dd.MM.yyyy")</small><br>
+                                                    <small class="text-muted">@yorum.Tarih.ToString("HH:mm")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (yorum.Onaylandi)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Onaylı
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-clock"></i> Beklemede
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    @if (!yorum.Onaylandi)
+                                                    {
+                                                        <button class="btn btn-success btn-sm" onclick="yorumOnayla(@yorum.Id)" title="Onayla">
+                                                            <i class="bi bi-check-lg"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="btn btn-warning btn-sm" onclick="yorumReddet(@yorum.Id)" title="Reddet">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    }
+                                                    <button class="btn btn-danger btn-sm" onclick="yorumSil(@yorum.Id)" title="Sil">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- İstatistikler -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-chat-dots fs-1"></i>
+                            <h4 class="mt-2">@Model.Count()</h4>
+                            <p class="mb-0">Toplam Yorum</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-check-circle fs-1"></i>
+                            <h4 class="mt-2">@Model.Count(y => y.Onaylandi)</h4>
+                            <p class="mb-0">Onaylı Yorum</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <i class="bi bi-clock fs-1"></i>
+                            <h4 class="mt-2">@Model.Count(y => !y.Onaylandi)</h4>
+                            <p class="mb-0">Bekleyen Yorum</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-star fs-1"></i>
+                            <h4 class="mt-2">@(Model.Any() ? Model.Average(y => y.Puan).ToString("F1") : "0")</h4>
+                            <p class="mb-0">Ortalama Puan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function yorumOnayla(yorumId) {
+    if (confirm('Bu yorumu onaylamak istediğinizden emin misiniz?')) {
+        fetch('/Admin/YorumOnayla', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `yorumId=${yorumId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        });
+    }
+}
+
+function yorumReddet(yorumId) {
+    if (confirm('Bu yorumu reddetmek istediğinizden emin misiniz?')) {
+        fetch('/Admin/YorumReddet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `yorumId=${yorumId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        });
+    }
+}
+
+function yorumSil(yorumId) {
+    if (confirm('Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+        fetch('/Admin/YorumSil', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `yorumId=${yorumId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`yorum-${yorumId}`).remove();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        });
+    }
+}
+</script> 
