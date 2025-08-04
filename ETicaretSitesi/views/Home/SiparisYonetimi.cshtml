@@ -1,0 +1,280 @@
+﻿@model List<ETicaretSitesi.models.Siparis>
+@{
+    ViewData["Title"] = "Sipariş Yönetimi";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-box-seam"></i> Sipariş Yönetimi
+        </h2>
+        <a href="/Admin/AdminPanel" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Admin Paneli
+        </a>
+    </div>
+
+    @if (TempData["Mesaj"] != null)
+    {
+        <div class="alert alert-@(TempData["MesajTipi"] ?? "info") alert-dismissible fade show">
+            <i class="bi bi-info-circle"></i> @TempData["Mesaj"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul"></i> Tüm Siparişler (@Model.Count)
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Müşteri</th>
+                                <th>Tarih</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th>Ödeme</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var siparis in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@siparis.Id</strong>
+                                        @if (!string.IsNullOrEmpty(siparis.TakipKodu))
+                                        {
+                                            <br>
+
+                                            <small class="text-muted">Takip: @siparis.TakipKodu</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@siparis.Kullanici.Ad @siparis.Kullanici.Soyad</div>
+                                        <small class="text-muted">@siparis.Kullanici.Email</small>
+                                    </td>
+                                    <td>@siparis.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td><strong>₺@siparis.ToplamTutar</strong></td>
+                                    <td>
+                                        @{
+                                            var durumClass = siparis.Durum switch
+                                            {
+                                                "Beklemede" => "warning",
+                                                "Onaylandı" => "success",
+                                                "Hazırlanıyor" => "info",
+                                                "Kargoda" => "primary",
+                                                "Teslim Edildi" => "success",
+                                                "İptal Edildi" => "danger",
+                                                _ => "secondary"
+                                            };
+                                        }
+                                        <span class="badge bg-@durumClass">@siparis.Durum</span>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var odemeClass = siparis.OdemeDurumu switch
+                                            {
+                                                "Tamamlandı" => "success",
+                                                "Beklemede" => "warning",
+                                                "Başarısız" => "danger",
+                                                _ => "secondary"
+                                            };
+                                        }
+                                        <span class="badge bg-@odemeClass">@(siparis.OdemeDurumu ?? "Bilinmiyor")</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    data-bs-toggle="modal" data-bs-target="#siparisDetayModal"
+                                                    onclick="siparisDetayGoster(@siparis.Id)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+
+                                            @if (siparis.Durum == "Beklemede")
+                                            {
+                                                <form method="post" action="/Admin/SiparisOnayla" style="display: inline;">
+                                                    <input type="hidden" name="siparisId" value="@siparis.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success"
+                                                            onclick="return confirm('Bu siparişi onaylamak istediğinizden emin misiniz?')">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                        data-bs-toggle="dropdown">
+                                                    <i class="bi bi-gear"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           onclick="durumGuncelle(@siparis.Id, 'Hazırlanıyor')">
+                                                            <i class="bi bi-box-seam"></i> Hazırlanıyor
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           onclick="durumGuncelle(@siparis.Id, 'Kargoda')">
+                                                            <i class="bi bi-truck"></i> Kargoda
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           onclick="durumGuncelle(@siparis.Id, 'Teslim Edildi')">
+                                                            <i class="bi bi-check-circle"></i> Teslim Edildi
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#"
+                                                           onclick="siparisIptalEt(@siparis.Id)">
+                                                            <i class="bi bi-x-circle"></i> İptal Et
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="text-muted mt-3">Henüz sipariş bulunmuyor</h5>
+                    <p class="text-muted">Müşteriler sipariş verdiğinde burada görünecek.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Sipariş Detay Modal -->
+<div class="modal fade" id="siparisDetayModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-box-seam"></i> Sipariş Detayı
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="siparisDetayIcerik">
+                <!-- AJAX ile yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Takip Kodu Modal -->
+<div class="modal fade" id="takipKoduModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-truck"></i> Takip Kodu Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Admin/TakipKoduEkle">
+                <div class="modal-body">
+                    <input type="hidden" id="takipKoduSiparisId" name="siparisId" />
+                    <div class="mb-3">
+                        <label for="takipKodu" class="form-label">Takip Kodu</label>
+                        <input type="text" class="form-control" id="takipKodu" name="takipKodu"
+                               placeholder="Kargo takip kodunu girin..." required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function siparisDetayGoster(siparisId) {
+        // AJAX ile sipariş detayını yükle
+        fetch(`/Admin/SiparisDetay?siparisId=${siparisId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('siparisDetayIcerik').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                document.getElementById('siparisDetayIcerik').innerHTML =
+                    '<div class="alert alert-danger">Sipariş detayı yüklenirken hata oluştu.</div>';
+            });
+    }
+
+    function durumGuncelle(siparisId, yeniDurum) {
+        if (confirm(`Sipariş durumunu "${yeniDurum}" olarak güncellemek istediğinizden emin misiniz?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/SiparisDurumGuncelle';
+
+            const inputSiparisId = document.createElement('input');
+            inputSiparisId.type = 'hidden';
+            inputSiparisId.name = 'siparisId';
+            inputSiparisId.value = siparisId;
+            form.appendChild(inputSiparisId);
+
+            const inputDurum = document.createElement('input');
+            inputDurum.type = 'hidden';
+            inputDurum.name = 'yeniDurum';
+            inputDurum.value = yeniDurum;
+            form.appendChild(inputDurum);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function siparisIptalEt(siparisId) {
+        const iptalNedeni = prompt('İptal nedenini girin:');
+        if (iptalNedeni) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/SiparisIptalEt';
+
+            const inputSiparisId = document.createElement('input');
+            inputSiparisId.type = 'hidden';
+            inputSiparisId.name = 'siparisId';
+            inputSiparisId.value = siparisId;
+            form.appendChild(inputSiparisId);
+
+            const inputNeden = document.createElement('input');
+            inputNeden.type = 'hidden';
+            inputNeden.name = 'iptalNedeni';
+            inputNeden.value = iptalNedeni;
+            form.appendChild(inputNeden);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function takipKoduEkle(siparisId) {
+        document.getElementById('takipKoduSiparisId').value = siparisId;
+        new bootstrap.Modal(document.getElementById('takipKoduModal')).show();
+    }
+</script> 

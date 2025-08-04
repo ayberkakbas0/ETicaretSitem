@@ -1,0 +1,104 @@
+﻿@model ETicaretSitesi.models.Siparis
+
+<div class="row">
+    <div class="col-md-6">
+        <h6 class="fw-bold">Müşteri Bilgileri</h6>
+        <table class="table table-sm">
+            <tr>
+                <td><strong>Ad Soyad:</strong></td>
+                <td>@Model.Kullanici.Ad @Model.Kullanici.Soyad</td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong></td>
+                <td>@Model.Kullanici.Email</td>
+            </tr>
+            <tr>
+                <td><strong>Telefon:</strong></td>
+                <td>@Model.Kullanici.Telefon</td>
+            </tr>
+        </table>
+
+        <h6 class="fw-bold mt-3">Sipariş Bilgileri</h6>
+        <table class="table table-sm">
+            <tr>
+                <td><strong>Sipariş No:</strong></td>
+                <td>#@Model.Id</td>
+            </tr>
+            <tr>
+                <td><strong>Sipariş Tarihi:</strong></td>
+                <td>@Model.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+            </tr>
+            <tr>
+                <td><strong>Durum:</strong></td>
+                <td>
+                    @{
+                        var durumClass = Model.Durum switch
+                        {
+                            "Beklemede" => "warning",
+                            "Onaylandı" => "success",
+                            "Hazırlanıyor" => "info",
+                            "Kargoda" => "primary",
+                            "Teslim Edildi" => "success",
+                            "İptal Edildi" => "danger",
+                            _ => "secondary"
+                        };
+                    }
+                    <span class="badge bg-@durumClass">@Model.Durum</span>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Ödeme Durumu:</strong></td>
+                <td>
+                    @{
+                        var odemeClass = Model.OdemeDurumu switch
+                        {
+                            "Tamamlandı" => "success",
+                            "Beklemede" => "warning",
+                            "Başarısız" => "danger",
+                            _ => "secondary"
+                        };
+                    }
+                    <span class="badge bg-@odemeClass">@(Model.OdemeDurumu ?? "Bilinmiyor")</span>
+                </td>
+            </tr>
+            @if (!string.IsNullOrEmpty(Model.TakipKodu))
+            {
+                <tr>
+                    <td><strong>Takip Kodu:</strong></td>
+                    <td>@Model.TakipKodu</td>
+                </tr>
+            }
+            @if (Model.OnayTarihi.HasValue)
+            {
+                <tr>
+                    <td><strong>Onay Tarihi:</strong></td>
+                    <td>@Model.OnayTarihi.Value.ToString("dd.MM.yyyy HH:mm")</td>
+                </tr>
+            }
+            @if (!string.IsNullOrEmpty(Model.Notlar))
+            {
+                <tr>
+                    <td><strong>Notlar:</strong></td>
+                    <td>@Model.Notlar</td>
+                </tr>
+            }
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="fw-bold">Teslimat Adresi</h6>
+        <div class="border rounded p-3 bg-light">
+            @Model.Adres
+        </div>
+
+        <h6 class="fw-bold mt-3">Sipariş Özeti</h6>
+        <div class="alert alert-info">
+            <strong>Toplam Tutar: ₺@Model.ToplamTutar</strong>
+        </div>
+
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle"></i>
+            <small>Bu sipariş session tabanlı sepet sistemi ile oluşturuldu. Detaylı ürün bilgileri mevcut değil.</small>
+        </div>
+    </div>
+</div> 

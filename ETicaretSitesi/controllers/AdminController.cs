@@ -2,6 +2,7 @@
 using ETicaretSitesi.models;
 using ETicaretSitesi.Utilities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ETicaretSitesi.Controllers
 {
@@ -424,6 +425,153 @@ namespace ETicaretSitesi.Controllers
             TempData["Mesaj"] = "Admin panelinden çıkış yaptınız.";
             TempData["MesajTipi"] = "success";
             return RedirectToAction("Index", "Home");
+        }
+
+        // Sipariş Yönetimi
+        [HttpGet]
+        public IActionResult SiparisYonetimi()
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparisler = _context.Siparis
+                .Include(s => s.Kullanici)
+                .OrderByDescending(s => s.SiparisTarihi)
+                .ToList();
+
+            return View("~/Views/Home/SiparisYonetimi.cshtml", siparisler);
+        }
+
+        [HttpPost]
+        public IActionResult SiparisOnayla(int siparisId)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparis = _context.Siparis
+                .FirstOrDefault(s => s.Id == siparisId);
+
+            if (siparis == null)
+            {
+                TempData["Mesaj"] = "Sipariş bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("SiparisYonetimi");
+            }
+
+            // Siparişi onayla
+            siparis.Durum = "Onaylandı";
+            siparis.OnayTarihi = DateTime.Now;
+            siparis.OnaylayanAdminId = int.Parse(HttpContext.Session.GetString("KullaniciId"));
+
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = "Sipariş başarıyla onaylandı.";
+            TempData["MesajTipi"] = "success";
+            return RedirectToAction("SiparisYonetimi");
+        }
+
+        [HttpPost]
+        public IActionResult SiparisDurumGuncelle(int siparisId, string yeniDurum)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparis = _context.Siparis.FirstOrDefault(s => s.Id == siparisId);
+            if (siparis == null)
+            {
+                TempData["Mesaj"] = "Sipariş bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("SiparisYonetimi");
+            }
+
+            siparis.Durum = yeniDurum;
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = "Sipariş durumu güncellendi.";
+            TempData["MesajTipi"] = "success";
+            return RedirectToAction("SiparisYonetimi");
+        }
+
+        [HttpPost]
+        public IActionResult SiparisIptalEt(int siparisId, string iptalNedeni)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparis = _context.Siparis
+                .FirstOrDefault(s => s.Id == siparisId);
+
+            if (siparis == null)
+            {
+                TempData["Mesaj"] = "Sipariş bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("SiparisYonetimi");
+            }
+
+            // Siparişi iptal et
+            siparis.Durum = "İptal Edildi";
+            siparis.Notlar = iptalNedeni;
+
+            // Sipariş iptal edildi
+
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = "Sipariş iptal edildi.";
+            TempData["MesajTipi"] = "warning";
+            return RedirectToAction("SiparisYonetimi");
+        }
+
+        [HttpPost]
+        public IActionResult TakipKoduEkle(int siparisId, string takipKodu)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparis = _context.Siparis.FirstOrDefault(s => s.Id == siparisId);
+            if (siparis == null)
+            {
+                TempData["Mesaj"] = "Sipariş bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("SiparisYonetimi");
+            }
+
+            siparis.TakipKodu = takipKodu;
+            siparis.Durum = "Kargoda";
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = "Takip kodu eklendi ve sipariş kargoya verildi.";
+            TempData["MesajTipi"] = "success";
+            return RedirectToAction("SiparisYonetimi");
+        }
+
+        [HttpGet]
+        public IActionResult SiparisDetay(int siparisId)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("AdminLogin");
+            }
+
+            var siparis = _context.Siparis
+                .Include(s => s.Kullanici)
+                .FirstOrDefault(s => s.Id == siparisId);
+
+            if (siparis == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("~/Views/Home/SiparisDetayPartial.cshtml", siparis);
         }
     }
 }
