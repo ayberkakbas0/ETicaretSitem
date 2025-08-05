@@ -15,7 +15,7 @@ namespace ETicaretSitesi.Controllers
             _context = context;
         }
 
-        // Admin giriş kontrolü
+        
         private bool IsAdmin()
         {
             var kullaniciId = HttpContext.Session.GetString("KullaniciId");
@@ -25,11 +25,11 @@ namespace ETicaretSitesi.Controllers
             return kullanici != null && kullanici.AdminMi;
         }
 
-        // Admin kayıt sayfası (sadece ilk admin için)
+        
         [HttpGet]
         public IActionResult AdminKayit()
         {
-            // Eğer zaten admin varsa, kayıt sayfasını engelle
+            
             if (_context.Kullanici.Any(k => k.AdminMi))
             {
                 TempData["Mesaj"] = "Admin zaten mevcut. Admin kaydı yapılamaz.";
@@ -40,13 +40,13 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/AdminKayit.cshtml");
         }
 
-        // Admin kayıt işlemi
+        
         [HttpPost]
         public IActionResult AdminKayit(string ad, string soyad, string email, string sifre, string sifreTekrar, string adminKodu)
         {
             try
             {
-                // Eğer zaten admin varsa, kayıt engelle
+                
                 if (_context.Kullanici.Any(k => k.AdminMi))
                 {
                     TempData["Mesaj"] = "Admin zaten mevcut. Admin kaydı yapılamaz.";
@@ -54,7 +54,7 @@ namespace ETicaretSitesi.Controllers
                     return RedirectToAction("AdminLogin");
                 }
 
-                // Validation
+               
                 if (string.IsNullOrEmpty(ad) || string.IsNullOrEmpty(soyad) ||
                     string.IsNullOrEmpty(email) || string.IsNullOrEmpty(sifre))
                 {
@@ -70,7 +70,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminKayit.cshtml");
                 }
 
-                // Admin kodu kontrolü (basit güvenlik)
+                
                 if (adminKodu != "ADMIN2024")
                 {
                     TempData["Mesaj"] = "Geçersiz admin kodu.";
@@ -78,7 +78,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminKayit.cshtml");
                 }
 
-                // Email kontrolü
+               
                 if (_context.Kullanici.Any(k => k.Email.ToLower() == email.ToLower()))
                 {
                     TempData["Mesaj"] = "Bu email adresi zaten kullanılıyor.";
@@ -86,7 +86,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminKayit.cshtml");
                 }
 
-                // Yeni admin oluştur
+                
                 var yeniAdmin = new Kullanici
                 {
                     Ad = ad.Trim(),
@@ -95,7 +95,7 @@ namespace ETicaretSitesi.Controllers
                     SifreHash = PasswordHasher.HashPassword(sifre),
                     KayitTarihi = DateTime.Now,
                     Aktif = true,
-                    AdminMi = true // Admin işaretle
+                    AdminMi = true 
                 };
 
                 _context.Kullanici.Add(yeniAdmin);
@@ -114,11 +114,9 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Admin giriş sayfası
         [HttpGet]
         public IActionResult AdminLogin()
         {
-            // Zaten giriş yapmışsa admin paneline yönlendir
             if (IsAdmin())
             {
                 return RedirectToAction("AdminPanel");
@@ -127,7 +125,6 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/AdminLogin.cshtml");
         }
 
-        // Admin giriş işlemi
         [HttpPost]
         public IActionResult AdminLogin(string email, string sifre)
         {
@@ -140,7 +137,6 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminLogin.cshtml");
                 }
 
-                // Admin kullanıcıyı bul
                 var admin = _context.Kullanici
                     .FirstOrDefault(k => k.Email.ToLower() == email.ToLower() && k.AdminMi);
 
@@ -151,7 +147,6 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminLogin.cshtml");
                 }
 
-                // Şifreyi doğrula
                 if (!PasswordHasher.VerifyPassword(sifre, admin.SifreHash))
                 {
                     TempData["Mesaj"] = "Email veya şifre hatalı.";
@@ -159,7 +154,6 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/AdminLogin.cshtml");
                 }
 
-                // Session'a admin bilgilerini kaydet
                 HttpContext.Session.SetString("KullaniciId", admin.Id.ToString());
                 HttpContext.Session.SetString("KullaniciAd", admin.Ad);
                 HttpContext.Session.SetString("KullaniciSoyad", admin.Soyad);
@@ -179,7 +173,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Admin paneli ana sayfa
         [HttpGet]
         public IActionResult AdminPanel()
         {
@@ -190,7 +183,6 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("AdminLogin");
             }
 
-            // İstatistikleri hesapla
             var toplamKullanici = _context.Kullanici.Count();
             var toplamUrun = _context.Urunler.Count();
             var toplamYorum = _context.Yorumlar.Count();
@@ -206,7 +198,6 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/AdminPanel.cshtml");
         }
 
-        // Yorum yönetimi sayfası
         [HttpGet]
         public IActionResult YorumYonetimi()
         {
@@ -226,7 +217,6 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/YorumYonetimi.cshtml", yorumlar);
         }
 
-        // Yorum onaylama
         [HttpPost]
         public IActionResult YorumOnayla(int yorumId)
         {
@@ -254,7 +244,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Yorum reddetme
         [HttpPost]
         public IActionResult YorumReddet(int yorumId)
         {
@@ -282,7 +271,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Yorum silme (admin)
         [HttpPost]
         public IActionResult YorumSil(int yorumId)
         {
@@ -310,7 +298,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Kullanıcı yönetimi
         [HttpGet]
         public IActionResult KullaniciYonetimi()
         {
@@ -328,7 +315,6 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/KullaniciYonetimi.cshtml", kullanicilar);
         }
 
-        // Kullanıcı aktif yapma
         [HttpPost]
         public IActionResult KullaniciAktifYap(int kullaniciId)
         {
@@ -356,7 +342,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Kullanıcı pasif yapma
         [HttpPost]
         public IActionResult KullaniciPasifYap(int kullaniciId)
         {
@@ -384,7 +369,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Kullanıcı silme
         [HttpPost]
         public IActionResult KullaniciSil(int kullaniciId)
         {
@@ -417,7 +401,6 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        // Admin çıkış
         [HttpGet]
         public IActionResult AdminLogout()
         {
@@ -427,7 +410,6 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // Sipariş Yönetimi
         [HttpGet]
         public IActionResult SiparisYonetimi()
         {
@@ -462,7 +444,6 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("SiparisYonetimi");
             }
 
-            // Siparişi onayla
             siparis.Durum = "Onaylandı";
             siparis.OnayTarihi = DateTime.Now;
             siparis.OnaylayanAdminId = int.Parse(HttpContext.Session.GetString("KullaniciId"));
@@ -516,11 +497,9 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("SiparisYonetimi");
             }
 
-            // Siparişi iptal et
             siparis.Durum = "İptal Edildi";
             siparis.Notlar = iptalNedeni;
 
-            // Sipariş iptal edildi
 
             _context.SaveChanges();
 

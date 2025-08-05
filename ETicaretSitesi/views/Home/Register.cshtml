@@ -129,7 +129,7 @@ function togglePassword(inputId, iconId) {
     }
 }
 
-// Form validation
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const sifreInput = document.getElementById('sifre');
@@ -161,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Telefon numarası kontrolü
         if (telefon && !/^[0-9+\-\s\(\)]+$/.test(telefon)) {
             e.preventDefault();
             alert('Geçerli bir telefon numarası girin.');
@@ -175,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Şifre eşleşme kontrolü
+    
     sifreTekrarInput.addEventListener('input', function() {
         if (sifreInput.value !== sifreTekrarInput.value) {
             sifreTekrarInput.setCustomValidity('Şifreler eşleşmiyor');

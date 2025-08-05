@@ -54,22 +54,19 @@ namespace ETicaretSitesi.models
         public DateTime? GuncellemeTarihi { get; set; }
 
         [MaxLength(500)]
-        public string? Etiketler { get; set; } // Virgülle ayrılmış etiketler
+        public string? Etiketler { get; set; } 
 
         [Range(0, 5, ErrorMessage = "Puan 0-5 arasında olmalıdır.")]
         public decimal? VarsayilanPuan { get; set; }
 
-        // Navigation properties
+        
         [ForeignKey("KategoriId")]
         public virtual Kategori Kategori { get; set; }
 
-        // Yorumlar ilişkisi
         public virtual ICollection<Yorum> Yorumlar { get; set; } = new List<Yorum>();
 
-        // Sipariş detayları ilişkisi
         public virtual ICollection<SiparisDetay> SiparisDetaylari { get; set; } = new List<SiparisDetay>();
 
-        // Computed properties
         [NotMapped]
         public decimal IndirimliFiyat => IndirimOrani.HasValue && IndirimOrani.Value > 0
             ? Fiyat * (1 - IndirimOrani.Value / 100)
@@ -108,7 +105,6 @@ namespace ETicaretSitesi.models
             ? Aciklama.Substring(0, 100) + "..."
             : Aciklama;
 
-        // Helper methods
         public void StokDusur(int adet)
         {
             if (Stok >= adet)

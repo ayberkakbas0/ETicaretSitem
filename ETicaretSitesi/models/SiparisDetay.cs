@@ -29,21 +29,18 @@ namespace ETicaretSitesi.models
         [Range(0, double.MaxValue, ErrorMessage = "Toplam fiyat 0'dan büyük olmalıdır.")]
         public decimal ToplamFiyat { get; set; }
 
-        // Navigation properties
         [ForeignKey("SiparisId")]
         public virtual Siparis Siparis { get; set; }
 
         [ForeignKey("UrunId")]
         public virtual Urun Urun { get; set; }
 
-        // Computed properties
         [NotMapped]
         public decimal ToplamTutar => BirimFiyat * Adet;
 
         [NotMapped]
         public bool StokYeterli => Urun?.Stok >= Adet;
 
-        // Helper methods
         public void ToplamFiyatHesapla()
         {
             ToplamFiyat = BirimFiyat * Adet;

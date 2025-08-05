@@ -58,12 +58,10 @@ namespace ETicaretSitesi.Controllers
                 return NotFound();
             }
 
-            // Sahte ödeme işlemi simülasyonu
             bool odemeBasarili = SimulatePayment(odemeYontemi, kartNumarasi, cvv);
 
             if (odemeBasarili)
             {
-                // Ödeme kaydı oluştur
                 var odeme = new Odeme
                 {
                     SiparisId = siparisId,
@@ -78,11 +76,9 @@ namespace ETicaretSitesi.Controllers
 
                 _context.Odemeler.Add(odeme);
 
-                // Sipariş durumunu güncelle
                 siparis.OdemeDurumu = "Tamamlandı";
-                siparis.Durum = "Beklemede"; // Admin onayı bekliyor
+                siparis.Durum = "Beklemede"; 
 
-                // Ürün stoklarını düşür
                 foreach (var detay in siparis.SiparisDetaylari)
                 {
                     var urun = detay.Urun;
@@ -92,7 +88,6 @@ namespace ETicaretSitesi.Controllers
                     }
                     else
                     {
-                        // Stok yetersiz, ödemeyi iptal et
                         TempData["Hata"] = $"{urun.Ad} ürünü için yeterli stok bulunmamaktadır.";
                         return RedirectToAction("OdemeSayfasi", new { siparisId });
                     }
@@ -112,12 +107,10 @@ namespace ETicaretSitesi.Controllers
 
         private bool SimulatePayment(string odemeYontemi, string kartNumarasi, string cvv)
         {
-            // Sahte ödeme simülasyonu
-            // Gerçek uygulamada bu kısım gerçek ödeme sağlayıcısı API'si ile değiştirilir
 
             if (odemeYontemi == "Kapıda Ödeme")
             {
-                return true; // Kapıda ödeme her zaman başarılı
+                return true; 
             }
 
             if (string.IsNullOrEmpty(kartNumarasi) || string.IsNullOrEmpty(cvv))
@@ -125,17 +118,15 @@ namespace ETicaretSitesi.Controllers
                 return false;
             }
 
-            // Test kart numaraları
             if (kartNumarasi.StartsWith("4111") || kartNumarasi.StartsWith("5555"))
             {
-                return true; // Başarılı ödeme
+                return true; 
             }
             else if (kartNumarasi.StartsWith("4000"))
             {
-                return false; // Başarısız ödeme
+                return false; 
             }
 
-            // Rastgele başarı oranı (%90 başarılı)
             Random random = new Random();
             return random.Next(1, 11) <= 9;
         }

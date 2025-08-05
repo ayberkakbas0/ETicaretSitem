@@ -23,7 +23,6 @@ namespace ETicaretSitesi.models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Yorum entity konfigürasyonu
             modelBuilder.Entity<Yorum>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -43,7 +42,6 @@ namespace ETicaretSitesi.models
                     .IsRequired()
                     .HasDefaultValue(true);
 
-                // İlişkiler
                 entity.HasOne(e => e.Urun)
                     .WithMany()
                     .HasForeignKey(e => e.UrunId)
@@ -54,18 +52,15 @@ namespace ETicaretSitesi.models
                     .HasForeignKey(e => e.KullaniciId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Unique constraint - her kullanıcı bir ürün için sadece bir yorum yapabilir
                 entity.HasIndex(e => new { e.KullaniciId, e.UrunId })
                     .IsUnique();
 
-                // İndeksler
                 entity.HasIndex(e => e.UrunId);
                 entity.HasIndex(e => e.KullaniciId);
                 entity.HasIndex(e => e.Tarih);
                 entity.HasIndex(e => e.Onaylandi);
             });
 
-            // Urun entity konfigürasyonu
             modelBuilder.Entity<Urun>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -79,20 +74,17 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Stok)
                     .IsRequired();
 
-                // İlişki
                 entity.HasOne(e => e.Kategori)
                     .WithMany()
                     .HasForeignKey(e => e.KategoriId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Yorumlar ilişkisi
                 entity.HasMany(e => e.Yorumlar)
                     .WithOne(y => y.Urun)
                     .HasForeignKey(y => y.UrunId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Kategori entity konfigürasyonu
             modelBuilder.Entity<Kategori>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -102,7 +94,6 @@ namespace ETicaretSitesi.models
                     .HasMaxLength(100);
             });
 
-            // Kullanici entity konfigürasyonu
             modelBuilder.Entity<Kullanici>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -125,7 +116,6 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Telefon)
                     .HasMaxLength(15);
 
-                // Telefon unique (boş değilse)
                 entity.HasIndex(e => e.Telefon)
                     .IsUnique()
                     .HasFilter("[Telefon] IS NOT NULL");
@@ -138,18 +128,15 @@ namespace ETicaretSitesi.models
                     .IsRequired()
                     .HasDefaultValue(false);
 
-                // Email unique
                 entity.HasIndex(e => e.Email)
                     .IsUnique();
 
-                // Yorumlar ilişkisi
                 entity.HasMany(e => e.Yorumlar)
                     .WithOne(y => y.Kullanici)
                     .HasForeignKey(y => y.KullaniciId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Siparis entity konfigürasyonu
             modelBuilder.Entity<Siparis>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -181,7 +168,6 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Notlar)
                     .HasMaxLength(500);
 
-                // İlişkiler
                 entity.HasOne(e => e.Kullanici)
                     .WithMany()
                     .HasForeignKey(e => e.KullaniciId)
@@ -197,14 +183,12 @@ namespace ETicaretSitesi.models
                     .HasForeignKey(sd => sd.SiparisId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // İndeksler
                 entity.HasIndex(e => e.KullaniciId);
                 entity.HasIndex(e => e.SiparisTarihi);
                 entity.HasIndex(e => e.Durum);
                 entity.HasIndex(e => e.OdemeDurumu);
             });
 
-            // SiparisDetay entity konfigürasyonu
             modelBuilder.Entity<SiparisDetay>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -220,7 +204,6 @@ namespace ETicaretSitesi.models
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
 
-                // İlişkiler
                 entity.HasOne(e => e.Siparis)
                     .WithMany(s => s.SiparisDetaylari)
                     .HasForeignKey(e => e.SiparisId)
@@ -231,12 +214,10 @@ namespace ETicaretSitesi.models
                     .HasForeignKey(e => e.UrunId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // İndeksler
                 entity.HasIndex(e => e.SiparisId);
                 entity.HasIndex(e => e.UrunId);
             });
 
-            // Odeme entity konfigürasyonu
             modelBuilder.Entity<Odeme>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -266,13 +247,11 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Aciklama)
                     .HasMaxLength(500);
 
-                // İlişki
                 entity.HasOne(e => e.Siparis)
                     .WithMany()
                     .HasForeignKey(e => e.SiparisId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // İndeksler
                 entity.HasIndex(e => e.SiparisId);
                 entity.HasIndex(e => e.OdemeTarihi);
                 entity.HasIndex(e => e.Durum);

@@ -164,7 +164,6 @@
     </div>
 </div>
 
-<!-- Sipariş Detay Modal -->
 <div class="modal fade" id="siparisDetayModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -175,13 +174,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="siparisDetayIcerik">
-                <!-- AJAX ile yüklenecek -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Takip Kodu Modal -->
 <div class="modal fade" id="takipKoduModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -213,7 +210,6 @@
 
 <script>
     function siparisDetayGoster(siparisId) {
-        // AJAX ile sipariş detayını yükle
         fetch(`/Admin/SiparisDetay?siparisId=${siparisId}`)
             .then(response => response.text())
             .then(html => {

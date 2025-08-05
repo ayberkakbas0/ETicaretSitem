@@ -26,7 +26,7 @@
                     <form method="post" action="/Odeme/OdemeYap" id="odemeForm">
                         <input type="hidden" name="siparisId" value="@Model.Id" />
 
-                        <!-- Ödeme Yöntemi Seçimi -->
+                       
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3">Ödeme Yöntemi Seçin:</h6>
                             <div class="row">
@@ -51,7 +51,7 @@
                             </div>
                         </div>
 
-                        <!-- Kredi Kartı Bilgileri -->
+                        
                         <div id="krediKartiBilgileri">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -82,7 +82,7 @@
                             </div>
                         </div>
 
-                        <!-- Havale Bilgileri -->
+                       
                         <div id="havaleBilgileri" style="display: none;">
                             <div class="alert alert-info">
                                 <h6><i class="bi bi-bank"></i> Havale Bilgileri</h6>
@@ -93,7 +93,7 @@
                             </div>
                         </div>
 
-                        <!-- Kapıda Ödeme Bilgileri -->
+                        
                         <div id="kapidaOdemeBilgileri" style="display: none;">
                             <div class="alert alert-warning">
                                 <h6><i class="bi bi-cash"></i> Kapıda Ödeme</h6>
@@ -111,7 +111,7 @@
             </div>
         </div>
 
-        <!-- Sipariş Özeti -->
+        
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-secondary text-white">
@@ -162,7 +162,7 @@
                 </div>
             </div>
 
-            <!-- Test Kartları -->
+            
             <div class="card mt-3">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
@@ -187,17 +187,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Ödeme yöntemi değişikliği
+    
     document.querySelectorAll('input[name="odemeYontemi"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
             var yontem = this.value;
 
-            // Tüm bilgi alanlarını gizle
+            
             document.getElementById('krediKartiBilgileri').style.display = 'none';
             document.getElementById('havaleBilgileri').style.display = 'none';
             document.getElementById('kapidaOdemeBilgileri').style.display = 'none';
 
-            // Seçilen yönteme göre göster
+            
             if (yontem === 'Kredi Kartı') {
                 document.getElementById('krediKartiBilgileri').style.display = 'block';
             } else if (yontem === 'Havale') {
@@ -208,14 +208,14 @@
         });
     });
 
-    // Kart numarası formatı
+    
     document.getElementById('kartNumarasi').addEventListener('input', function () {
         var value = this.value.replace(/\s/g, '').replace(/\D/g, '');
         var formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
         this.value = formattedValue;
     });
 
-    // Son kullanma tarihi formatı
+    
     document.getElementById('sonKullanmaTarihi').addEventListener('input', function () {
         var value = this.value.replace(/\D/g, '');
         if (value.length >= 2) {
@@ -224,12 +224,12 @@
         this.value = value;
     });
 
-    // CVV sadece sayı
+    
     document.getElementById('cvv').addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
     });
 
-    // Form validation
+    
     document.getElementById('odemeForm').addEventListener('submit', function (e) {
         var odemeYontemi = document.querySelector('input[name="odemeYontemi"]:checked').value;
 

@@ -9,7 +9,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 
 <div class="container mt-4">
-    <!-- Navbar -->
+
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4">
         <a class="navbar-brand fw-bold" href="/Home/Index">E-Ticaret Sitem</a>
         <div class="navbar-nav ms-auto">
@@ -49,7 +49,7 @@
         </div>
     }
 
-    <!-- Breadcrumb -->
+
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/Home/Index">Ana Sayfa</a></li>
@@ -59,7 +59,7 @@
     </nav>
 
     <div class="row">
-        <!-- Ürün Resmi -->
+
         <div class="col-md-6 mb-4">
             <div class="card">
                 <img src="@(string.IsNullOrEmpty(Model.ResimUrl) ? "/images/default.png" : Model.ResimUrl)"
@@ -67,16 +67,16 @@
             </div>
         </div>
 
-        <!-- Ürün Bilgileri -->
+
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-body">
                     <h2 class="card-title text-primary">@Model.Ad</h2>
 
-                    <!-- Kategori -->
+                    
                     <span class="badge bg-secondary mb-3">@Model.Kategori?.Isim</span>
 
-                    <!-- Puan -->
+                   
                     <div class="mb-3">
                         @if (ortalamaPuan > 0)
                         {
@@ -106,12 +106,12 @@
                         }
                     </div>
 
-                    <!-- Fiyat -->
+                   
                     <div class="mb-3">
                         <h3 class="text-success fw-bold">₺@Model.Fiyat.ToString("N2")</h3>
                     </div>
 
-                    <!-- Stok Durumu -->
+                  
                     <div class="mb-3">
                         @if (Model.Stok > 0)
                         {
@@ -127,13 +127,13 @@
                         }
                     </div>
 
-                    <!-- Açıklama -->
+                   
                     <div class="mb-4">
                         <h5>Açıklama:</h5>
                         <p class="text-muted">@Model.Aciklama</p>
                     </div>
 
-                    <!-- Butonlar -->
+                   
                     <div class="d-grid gap-2">
                         @if (Model.Stok > 0)
                         {
@@ -154,7 +154,7 @@
         </div>
     </div>
 
-    <!-- Yorumlar Bölümü -->
+    
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -212,7 +212,7 @@
     </div>
 </div>
 
-<!-- Yorum Modal -->
+
 <div class="modal fade" id="yorumModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -270,7 +270,7 @@
 
 <script>
     function yorumModalAc(urunId, urunAdi) {
-        // Kullanıcı giriş yapmış mı kontrol et
+      
     @if (Context.Session.GetString("KullaniciId") == null)
     {
         <text>
@@ -283,7 +283,7 @@
             document.getElementById('urunId').value = urunId;
         document.getElementById('urunAdi').textContent = urunAdi;
 
-        // Modal'ı aç
+       
         var modal = new bootstrap.Modal(document.getElementById('yorumModal'));
         modal.show();
     }
@@ -311,7 +311,7 @@
         }
     }
 
-    // Karakter sayısı kontrolü
+  
     document.getElementById('metin').addEventListener('input', function () {
         var kalan = 500 - this.value.length;
         document.getElementById('karakterSayisi').textContent = kalan;
@@ -323,7 +323,7 @@
         }
     });
 
-    // Form validation
+   
     document.querySelector('#yorumModal form').addEventListener('submit', function (e) {
         var metin = document.getElementById('metin').value.trim();
         var puan = document.querySelector('input[name="puan"]:checked');
