@@ -21,17 +21,17 @@ namespace ETicaretSitesi.models
 
         [Required]
         [MaxLength(50)]
-        public string Durum { get; set; } = "Beklemede"; 
+        public string Durum { get; set; } = "Beklemede"; // "Beklemede", "Onaylandı", "Hazırlanıyor", "Kargoda", "Teslim Edildi", "İptal Edildi"
 
         [Required]
         [MaxLength(500)]
         public string Adres { get; set; }
 
         [MaxLength(20)]
-        public string? OdemeDurumu { get; set; } 
+        public string? OdemeDurumu { get; set; } // "Beklemede", "Tamamlandı", "Başarısız"
 
         [MaxLength(50)]
-        public string? OdemeYontemi { get; set; } 
+        public string? OdemeYontemi { get; set; } // "Kredi Kartı", "Havale", "Kapıda Ödeme"
 
         [MaxLength(50)]
         public string? TakipKodu { get; set; }
@@ -43,14 +43,16 @@ namespace ETicaretSitesi.models
         [MaxLength(500)]
         public string? Notlar { get; set; }
 
+
+
+        // Navigation properties
         [ForeignKey("KullaniciId")]
         public virtual Kullanici Kullanici { get; set; }
 
         [ForeignKey("OnaylayanAdminId")]
         public virtual Kullanici? OnaylayanAdmin { get; set; }
 
-        public virtual ICollection<SiparisDetay> SiparisDetaylari { get; set; } = new List<SiparisDetay>();
-
+        // Computed properties
         [NotMapped]
         public bool OdemeTamamlandi => OdemeDurumu == "Tamamlandı";
 
@@ -66,6 +68,7 @@ namespace ETicaretSitesi.models
         [NotMapped]
         public bool IptalEdildi => Durum == "İptal Edildi";
 
+        // Helper methods
         public void Onayla(int adminId)
         {
             Durum = "Onaylandı";

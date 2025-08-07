@@ -13,7 +13,7 @@ namespace ETicaretSitesi.models
         public DbSet<Kullanici> Kullanici { get; set; }
         public DbSet<Sepet> Sepet { get; set; }
         public DbSet<Siparis> Siparis { get; set; }
-        public DbSet<SiparisDetay> SiparisDetay { get; set; }
+
         public DbSet<SiparisDurumu> SiparisDurumu { get; set; }
         public DbSet<Odeme> Odemeler { get; set; }
         public DbSet<Urun> Urunler { get; set; }
@@ -23,6 +23,7 @@ namespace ETicaretSitesi.models
         {
             base.OnModelCreating(modelBuilder);
 
+            
             modelBuilder.Entity<Yorum>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -42,6 +43,7 @@ namespace ETicaretSitesi.models
                     .IsRequired()
                     .HasDefaultValue(true);
 
+                
                 entity.HasOne(e => e.Urun)
                     .WithMany()
                     .HasForeignKey(e => e.UrunId)
@@ -52,15 +54,18 @@ namespace ETicaretSitesi.models
                     .HasForeignKey(e => e.KullaniciId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                
                 entity.HasIndex(e => new { e.KullaniciId, e.UrunId })
                     .IsUnique();
 
+                
                 entity.HasIndex(e => e.UrunId);
                 entity.HasIndex(e => e.KullaniciId);
                 entity.HasIndex(e => e.Tarih);
                 entity.HasIndex(e => e.Onaylandi);
             });
 
+            
             modelBuilder.Entity<Urun>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -74,17 +79,20 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Stok)
                     .IsRequired();
 
+                
                 entity.HasOne(e => e.Kategori)
                     .WithMany()
                     .HasForeignKey(e => e.KategoriId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                
                 entity.HasMany(e => e.Yorumlar)
                     .WithOne(y => y.Urun)
                     .HasForeignKey(y => y.UrunId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            
             modelBuilder.Entity<Kategori>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -94,6 +102,7 @@ namespace ETicaretSitesi.models
                     .HasMaxLength(100);
             });
 
+            
             modelBuilder.Entity<Kullanici>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -116,6 +125,7 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Telefon)
                     .HasMaxLength(15);
 
+               
                 entity.HasIndex(e => e.Telefon)
                     .IsUnique()
                     .HasFilter("[Telefon] IS NOT NULL");
@@ -128,15 +138,18 @@ namespace ETicaretSitesi.models
                     .IsRequired()
                     .HasDefaultValue(false);
 
+                
                 entity.HasIndex(e => e.Email)
                     .IsUnique();
 
+                
                 entity.HasMany(e => e.Yorumlar)
                     .WithOne(y => y.Kullanici)
                     .HasForeignKey(y => y.KullaniciId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            
             modelBuilder.Entity<Siparis>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -168,6 +181,7 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Notlar)
                     .HasMaxLength(500);
 
+                
                 entity.HasOne(e => e.Kullanici)
                     .WithMany()
                     .HasForeignKey(e => e.KullaniciId)
@@ -178,46 +192,18 @@ namespace ETicaretSitesi.models
                     .HasForeignKey(e => e.OnaylayanAdminId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasMany(e => e.SiparisDetaylari)
-                    .WithOne(sd => sd.Siparis)
-                    .HasForeignKey(sd => sd.SiparisId)
-                    .OnDelete(DeleteBehavior.Cascade);
 
+
+                
                 entity.HasIndex(e => e.KullaniciId);
                 entity.HasIndex(e => e.SiparisTarihi);
                 entity.HasIndex(e => e.Durum);
                 entity.HasIndex(e => e.OdemeDurumu);
             });
 
-            modelBuilder.Entity<SiparisDetay>(entity =>
-            {
-                entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Adet)
-                    .IsRequired();
 
-                entity.Property(e => e.BirimFiyat)
-                    .HasColumnType("decimal(18,2)")
-                    .IsRequired();
-
-                entity.Property(e => e.ToplamFiyat)
-                    .HasColumnType("decimal(18,2)")
-                    .IsRequired();
-
-                entity.HasOne(e => e.Siparis)
-                    .WithMany(s => s.SiparisDetaylari)
-                    .HasForeignKey(e => e.SiparisId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.Urun)
-                    .WithMany()
-                    .HasForeignKey(e => e.UrunId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasIndex(e => e.SiparisId);
-                entity.HasIndex(e => e.UrunId);
-            });
-
+            
             modelBuilder.Entity<Odeme>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -247,11 +233,13 @@ namespace ETicaretSitesi.models
                 entity.Property(e => e.Aciklama)
                     .HasMaxLength(500);
 
+                
                 entity.HasOne(e => e.Siparis)
                     .WithMany()
                     .HasForeignKey(e => e.SiparisId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                
                 entity.HasIndex(e => e.SiparisId);
                 entity.HasIndex(e => e.OdemeTarihi);
                 entity.HasIndex(e => e.Durum);

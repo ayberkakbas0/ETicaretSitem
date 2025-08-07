@@ -9,6 +9,7 @@ using System;
 
 namespace ETicaretSitesi.Controllers
 {
+    // Session için yardımcı extension
     public static class SessionExtensions
     {
         public static void SetObjectAsJson(this ISession session, string key, object value)
@@ -22,6 +23,7 @@ namespace ETicaretSitesi.Controllers
             return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
         }
 
+        // HomeController ile uyumlu olması için eklenen metodlar
         public static void SetObject(this ISession session, string key, object value)
         {
             session.SetString(key, JsonConvert.SerializeObject(value));
@@ -43,12 +45,14 @@ namespace ETicaretSitesi.Controllers
             _context = context;
         }
 
+        // Sepet sayfası
         public IActionResult Index()
         {
             var sepet = HttpContext.Session.GetObject<List<Urun>>("Sepet") ?? new List<Urun>();
             return View(sepet);
         }
 
+        // Sepete ürün ekle
         [HttpPost]
         public IActionResult Ekle(int id)
         {
@@ -62,6 +66,7 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Index", "Sepet");
         }
 
+        // Sepetten ürün çıkar
         [HttpPost]
         public IActionResult Sil(int sepetId)
         {
@@ -74,6 +79,7 @@ namespace ETicaretSitesi.Controllers
                     return RedirectToAction("Sepetim", "Home");
                 }
 
+                // Session-based cart system kullan
                 List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
                 int eskiAdet = sepet.Count(x => x == sepetId);
 
@@ -100,13 +106,17 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
+        // Sepet ürün adetini güncelle
         [HttpPost]
         public IActionResult AdetGuncelle(int sepetId, int adet)
         {
+            // Session-based cart system kullan
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
 
+            // Debug bilgisi
             System.Diagnostics.Debug.WriteLine($"AdetGuncelle çağrıldı - sepetId: {sepetId}, adet: {adet}");
 
+            // Ürün stok kontrolü
             var urun = _context.Urunler.FirstOrDefault(u => u.Id == sepetId);
             if (urun == null)
             {
@@ -122,14 +132,17 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Sepetim", "Home");
             }
 
+            // Eski adetleri kaldır
             sepet.RemoveAll(x => x == sepetId);
 
+            // Yeni adet ekle (0'dan büyükse)
             if (adet > 0)
             {
                 for (int i = 0; i < adet; i++)
                     sepet.Add(sepetId);
             }
 
+            // Session'ı güncelle
             HttpContext.Session.SetObject("Sepet", sepet);
 
             System.Diagnostics.Debug.WriteLine($"Adet güncellendi: {adet}, yeni sepet eleman sayısı: {sepet.Count}");
@@ -140,6 +153,7 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Sepetim", "Home");
         }
 
+        // Sipariş oluştur ve ödeme sayfasına yönlendir
         [HttpGet]
         public IActionResult SiparisOlustur()
         {
@@ -151,6 +165,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            // Session-based cart system kullan
             List<int> sepetList = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
 
             if (!sepetList.Any())
@@ -160,6 +175,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Sepetim", "Home");
             }
 
+            // Sepet ürünlerini oluştur
             var sepetUrunleri = sepetList
                 .GroupBy(id => id)
                 .Select(g => new models.Sepet
@@ -169,6 +185,7 @@ namespace ETicaretSitesi.Controllers
                     Adet = g.Count()
                 }).ToList();
 
+            // Sipariş oluşturma sayfasına yönlendir
             return View("SiparisOlustur", sepetUrunleri);
         }
 
@@ -190,6 +207,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("SiparisOlustur");
             }
 
+            // Session-based cart system kullan
             List<int> sepetList = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
 
             if (!sepetList.Any())
@@ -199,6 +217,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Sepetim", "Home");
             }
 
+            // Sepet ürünlerini oluştur
             var sepetUrunleri = sepetList
                 .GroupBy(id => id)
                 .Select(g => new models.Sepet
@@ -208,8 +227,10 @@ namespace ETicaretSitesi.Controllers
                     Adet = g.Count()
                 }).ToList();
 
+            // Toplam tutarı hesapla
             decimal toplamTutar = sepetUrunleri.Sum(s => s.Urun.Fiyat * s.Adet);
 
+            // Yeni sipariş oluştur
             var siparis = new Siparis
             {
                 KullaniciId = int.Parse(kullaniciId),
@@ -223,31 +244,23 @@ namespace ETicaretSitesi.Controllers
             _context.Siparis.Add(siparis);
             _context.SaveChanges();
 
-            foreach (var sepetUrunu in sepetUrunleri)
-            {
-                var siparisDetay = new SiparisDetay
-                {
-                    SiparisId = siparis.Id,
-                    UrunId = sepetUrunu.Id, 
-                    Adet = sepetUrunu.Adet,
-                    BirimFiyat = sepetUrunu.Urun.Fiyat,
-                    ToplamFiyat = sepetUrunu.Urun.Fiyat * sepetUrunu.Adet
-                };
 
-                _context.SiparisDetay.Add(siparisDetay);
-            }
 
+            // Session'daki sepeti temizle
             HttpContext.Session.Remove("Sepet");
             _context.SaveChanges();
 
+            // Ödeme sayfasına yönlendir
             return RedirectToAction("OdemeSayfasi", "Odeme", new { siparisId = siparis.Id });
         }
 
+        // Geçici test metodu
         [HttpGet]
         public IActionResult TestSepet()
         {
             var kullaniciId = HttpContext.Session.GetString("KullaniciId");
 
+            // Tüm sepet verilerini kontrol et
             var tumSepetler = _context.Sepet
                 .Include(s => s.Urun)
                 .ToList();
@@ -279,25 +292,32 @@ namespace ETicaretSitesi.Controllers
             });
         }
 
+        // Test adet güncelleme
         [HttpGet]
         public IActionResult TestAdetGuncelle(int urunId, int yeniAdet)
         {
+            // Session-based cart system kullan
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
 
+            // Ürünün mevcut adetini kontrol et
             int mevcutAdet = sepet.Count(x => x == urunId);
 
             if (mevcutAdet > 0)
             {
+                // Eski adetleri kaldır
                 sepet.RemoveAll(x => x == urunId);
 
+                // Yeni adet ekle (0'dan büyükse)
                 if (yeniAdet > 0)
                 {
                     for (int i = 0; i < yeniAdet; i++)
                         sepet.Add(urunId);
                 }
 
+                // Session'ı güncelle
                 HttpContext.Session.SetObject("Sepet", sepet);
 
+                // Ürün bilgisini al
                 var urun = _context.Urunler.FirstOrDefault(u => u.Id == urunId);
                 string urunAdi = urun?.Ad ?? "Bilinmeyen Ürün";
 
@@ -316,20 +336,20 @@ namespace ETicaretSitesi.Controllers
             });
         }
 
-        
+        // Sepeti temizle
         [HttpPost]
         public IActionResult SepetiTemizle()
         {
             try
             {
-                
+                // Session'ı temizle
                 HttpContext.Session.Remove("Sepet");
 
-               
+                // Başarı mesajı ekle
                 TempData["Mesaj"] = "Sepetiniz başarıyla temizlendi.";
                 TempData["MesajTipi"] = "success";
 
-                
+                // Sepetim sayfasına yönlendir
                 return RedirectToAction("Sepetim", "Home");
             }
             catch (Exception ex)
