@@ -96,9 +96,46 @@
             <strong>Toplam Tutar: ₺@Model.ToplamTutar</strong>
         </div>
 
-        <div class="alert alert-warning">
-            <i class="bi bi-info-circle"></i>
-            <small>Bu sipariş session tabanlı sepet sistemi ile oluşturuldu. Detaylı ürün bilgileri mevcut değil.</small>
-        </div>
+        @if (!string.IsNullOrEmpty(Model.Notlar))
+        {
+            try
+            {
+                var sepetDetaylari = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(Model.Notlar);
+                if (sepetDetaylari != null && sepetDetaylari.Any())
+                {
+                    <h6 class="fw-bold mt-3">Sipariş Edilen Ürünler</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Adet</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var urun in sepetDetaylari)
+                                {
+                                    <tr>
+                                        <td>@urun.GetProperty("UrunAdi").GetString()</td>
+                                        <td>@urun.GetProperty("Adet").GetInt32()</td>
+                                        <td>₺@urun.GetProperty("BirimFiyat").GetDecimal().ToString("N2")</td>
+                                        <td>₺@((urun.GetProperty("Adet").GetInt32() * urun.GetProperty("BirimFiyat").GetDecimal()).ToString("N2"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+            catch
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i>
+                    <small>Ürün detayları görüntülenemiyor.</small>
+                </div>
+            }
+        }
     </div>
 </div> 

@@ -45,7 +45,26 @@ namespace ETicaretSitesi.Controllers
         [HttpPost]
         public IActionResult SepeteEkle(int urunId)
         {
+            // Ürünü kontrol et
+            var urun = _context.Urunler.FirstOrDefault(u => u.Id == urunId);
+            if (urun == null)
+            {
+                TempData["Mesaj"] = "Ürün bulunamadı.";
+                TempData["MesajTipi"] = "danger";
+                return RedirectToAction("Index");
+            }
+
+            // Stok kontrolü
             List<int> sepet = HttpContext.Session.GetObject<List<int>>("Sepet") ?? new List<int>();
+            int sepetAdet = sepet.Count(x => x == urunId);
+
+            if (urun.Stok <= sepetAdet)
+            {
+                TempData["Mesaj"] = $"{urun.Ad} ürününün stok miktarı yetersiz. Mevcut stok: {urun.Stok}";
+                TempData["MesajTipi"] = "warning";
+                return RedirectToAction("Index");
+            }
+
             sepet.Add(urunId);
             HttpContext.Session.SetObject("Sepet", sepet);
             return RedirectToAction("Index");
@@ -203,7 +222,7 @@ namespace ETicaretSitesi.Controllers
                 return RedirectToAction("Sepetim", "Home");
             }
 
-            // Sepet ürünlerini oluştur
+            // Sepet ürünlerini oluştur ve stok kontrolü yap
             var sepetUrunleri = sepetList
                 .GroupBy(id => id)
                 .Select(g => new models.Sepet
@@ -213,8 +232,35 @@ namespace ETicaretSitesi.Controllers
                     Adet = g.Count()
                 }).ToList();
 
+            // Stok kontrolü
+            foreach (var sepetUrun in sepetUrunleri)
+            {
+                if (sepetUrun.Urun == null)
+                {
+                    TempData["Mesaj"] = "Sepetinizde bulunmayan ürünler var.";
+                    TempData["MesajTipi"] = "danger";
+                    return RedirectToAction("Sepetim", "Home");
+                }
+
+                if (sepetUrun.Urun.Stok < sepetUrun.Adet)
+                {
+                    TempData["Mesaj"] = $"{sepetUrun.Urun.Ad} ürününün stok miktarı yetersiz. Mevcut stok: {sepetUrun.Urun.Stok}";
+                    TempData["MesajTipi"] = "warning";
+                    return RedirectToAction("Sepetim", "Home");
+                }
+            }
+
             // Toplam tutarı hesapla
             decimal toplamTutar = sepetUrunleri.Sum(s => s.Urun.Fiyat * s.Adet);
+
+            // Sepet bilgilerini JSON olarak hazırla
+            var sepetDetaylari = sepetUrunleri.Select(s => new
+            {
+                UrunId = s.Urun.Id,
+                UrunAdi = s.Urun.Ad,
+                Adet = s.Adet,
+                BirimFiyat = s.Urun.Fiyat
+            }).ToList();
 
             // Yeni sipariş oluştur
             var siparis = new Siparis
@@ -224,7 +270,8 @@ namespace ETicaretSitesi.Controllers
                 ToplamTutar = toplamTutar,
                 Durum = "Beklemede",
                 Adres = adres,
-                OdemeDurumu = "Beklemede"
+                OdemeDurumu = "Beklemede",
+                Notlar = System.Text.Json.JsonSerializer.Serialize(sepetDetaylari)
             };
 
             _context.Siparis.Add(siparis);
@@ -241,6 +288,47 @@ namespace ETicaretSitesi.Controllers
 
             // Ödeme sayfasına yönlendir
             return RedirectToAction("OdemeSayfasi", "Odeme", new { siparisId = siparis.Id });
+        }
+
+        // Siparişlerim sayfası
+        public IActionResult Siparislerim()
+        {
+            var kullaniciId = HttpContext.Session.GetString("KullaniciId");
+            if (string.IsNullOrEmpty(kullaniciId))
+            {
+                TempData["Mesaj"] = "Siparişlerinizi görüntülemek için giriş yapmalısınız.";
+                TempData["MesajTipi"] = "warning";
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var siparisler = _context.Siparis
+                .Include(s => s.Kullanici)
+                .Where(s => s.KullaniciId == int.Parse(kullaniciId))
+                .OrderByDescending(s => s.SiparisTarihi)
+                .ToList();
+
+            return View(siparisler);
+        }
+
+        // Sipariş detay partial view
+        public IActionResult SiparisDetayPartial(int siparisId)
+        {
+            var kullaniciId = HttpContext.Session.GetString("KullaniciId");
+            if (string.IsNullOrEmpty(kullaniciId))
+            {
+                return Content("<div class='alert alert-danger'>Oturum süreniz dolmuş.</div>");
+            }
+
+            var siparis = _context.Siparis
+                .Include(s => s.Kullanici)
+                .FirstOrDefault(s => s.Id == siparisId && s.KullaniciId == int.Parse(kullaniciId));
+
+            if (siparis == null)
+            {
+                return Content("<div class='alert alert-danger'>Sipariş bulunamadı.</div>");
+            }
+
+            return PartialView("SiparisDetayPartial", siparis);
         }
     }
 }

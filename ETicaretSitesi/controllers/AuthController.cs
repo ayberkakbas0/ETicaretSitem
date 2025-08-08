@@ -14,11 +14,11 @@ namespace ETicaretSitesi.Controllers
             _context = context;
         }
 
-        
+        // Login sayfası
         [HttpGet]
         public IActionResult Login()
         {
-            
+            // Zaten giriş yapmışsa ana sayfaya yönlendir
             if (HttpContext.Session.GetString("KullaniciId") != null)
             {
                 return RedirectToAction("Index", "Home");
@@ -26,7 +26,7 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/Login.cshtml");
         }
 
-       
+        // Login işlemi
         [HttpPost]
         public IActionResult Login(string email, string sifre)
         {
@@ -39,7 +39,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Login.cshtml");
                 }
 
-                
+                // Kullanıcıyı bul
                 var kullanici = _context.Kullanici
                     .FirstOrDefault(k => k.Email.ToLower() == email.ToLower());
 
@@ -50,7 +50,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Login.cshtml");
                 }
 
-                
+                // Şifreyi doğrula
                 if (!PasswordHasher.VerifyPassword(sifre, kullanici.SifreHash))
                 {
                     TempData["Mesaj"] = "Email veya şifre hatalı.";
@@ -58,13 +58,13 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Login.cshtml");
                 }
 
-                
+                // Session'a kullanıcı bilgilerini kaydet
                 HttpContext.Session.SetString("KullaniciId", kullanici.Id.ToString());
                 HttpContext.Session.SetString("KullaniciAd", kullanici.Ad);
                 HttpContext.Session.SetString("KullaniciSoyad", kullanici.Soyad);
                 HttpContext.Session.SetString("KullaniciEmail", kullanici.Email);
 
-               
+                // Admin kontrolü
                 if (kullanici.AdminMi)
                 {
                     HttpContext.Session.SetString("AdminMi", "true");
@@ -87,7 +87,7 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        
+        // Register sayfası
         [HttpGet]
         public IActionResult Register()
         {
@@ -98,13 +98,13 @@ namespace ETicaretSitesi.Controllers
             return View("~/Views/Home/Register.cshtml");
         }
 
-        
+        // Register işlemi
         [HttpPost]
         public IActionResult Register(string ad, string soyad, string email, string sifre, string sifreTekrar, string telefon)
         {
             try
             {
-                
+                // Validation
                 if (string.IsNullOrEmpty(ad) || string.IsNullOrEmpty(soyad) ||
                     string.IsNullOrEmpty(email) || string.IsNullOrEmpty(sifre))
                 {
@@ -127,7 +127,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Register.cshtml");
                 }
 
-                
+                // Email kontrolü
                 if (_context.Kullanici.Any(k => k.Email.ToLower() == email.ToLower()))
                 {
                     TempData["Mesaj"] = "Bu email adresi zaten kullanılıyor.";
@@ -135,7 +135,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Register.cshtml");
                 }
 
-                
+                // Telefon kontrolü (eğer telefon girilmişse)
                 if (!string.IsNullOrEmpty(telefon?.Trim()) &&
                     _context.Kullanici.Any(k => k.Telefon == telefon.Trim()))
                 {
@@ -144,7 +144,7 @@ namespace ETicaretSitesi.Controllers
                     return View("~/Views/Home/Register.cshtml");
                 }
 
-                
+                // Yeni kullanıcı oluştur
                 var yeniKullanici = new Kullanici
                 {
                     Ad = ad.Trim(),
@@ -159,7 +159,7 @@ namespace ETicaretSitesi.Controllers
                 _context.Kullanici.Add(yeniKullanici);
                 _context.SaveChanges();
 
-                
+                // Yeni kayıt olan kullanıcı normal kullanıcı olarak işaretlenir
                 HttpContext.Session.SetString("AdminMi", "false");
 
                 TempData["Mesaj"] = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
@@ -175,7 +175,7 @@ namespace ETicaretSitesi.Controllers
             }
         }
 
-        
+        // Logout
         [HttpGet]
         public IActionResult Logout()
         {
@@ -185,7 +185,7 @@ namespace ETicaretSitesi.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        
+        // Profil sayfası
         [HttpGet]
         public IActionResult Profile()
         {
@@ -201,6 +201,14 @@ namespace ETicaretSitesi.Controllers
                 HttpContext.Session.Clear();
                 return RedirectToAction("Login");
             }
+
+            var siparisler = _context.Siparis
+                .Include(s => s.Kullanici)
+                .Where(s => s.KullaniciId == int.Parse(kullaniciId))
+                .OrderByDescending(s => s.SiparisTarihi)
+                .ToList();
+
+            ViewBag.Siparisler = siparisler;
 
             return View("~/Views/Home/Profile.cshtml", kullanici);
         }
